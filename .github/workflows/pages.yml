@@ -5,8 +5,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
+env:
+  PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -30,10 +33,28 @@ jobs:
       - run: node scripts/build-pages.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
+        id: pages-artifact
         with:
           path: dist
+          name: ${{ env.PAGES_ARTIFACT_NAME }}
+      - name: Wait for uploaded artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_ARTIFACT_ID: ${{ steps.pages-artifact.outputs.artifact_id }}
+        run: |
+          for attempt in {1..24}; do
+            if gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+              --jq ".artifacts[] | select(.name == \"$PAGES_ARTIFACT_NAME\" and (.id | tostring) == \"$PAGES_ARTIFACT_ID\" and .expired == false) | .id" \
+              | grep -qx "$PAGES_ARTIFACT_ID"; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Uploaded Pages artifact is not yet available.' >&2
+          exit 1
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          timeout: 1800000 # Allow Pages up to 30 minutes to sync the demo assets.
+          artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}
+          timeout: 600000
