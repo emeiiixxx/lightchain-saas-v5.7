@@ -10,7 +10,7 @@ export const gridCropExample = {
 
 // Use source pixels without scaling, padding or gaps. Rounded boundaries also
 // partition images whose dimensions are not divisible by the grid size.
-export async function cropMaterialGrid(node: MaterialWorkflow, locale: Locale): Promise<Omit<VideoCanvasMedia, 'x' | 'y'>[]> {
+export async function cropMaterialGrid(node: Pick<MaterialWorkflow, 'id' | 'grid' | 'references'>, locale: Locale): Promise<Omit<VideoCanvasMedia, 'x' | 'y'>[]> {
   const reference = node.references[0];
   if (!reference) throw new Error('Missing grid image');
   const image = new Image();

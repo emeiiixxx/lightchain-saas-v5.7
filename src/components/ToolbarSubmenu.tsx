@@ -6,6 +6,8 @@ import { Button } from './ui';
 export type ToolbarSubmenuContent = {
   items: { label: string; onSelect: () => void }[];
   emptyLabel: string;
+  className?: string;
+  nodeId?: string;
 };
 
 type Props = {
@@ -18,10 +20,11 @@ type Props = {
   onOpen: () => void;
   onClose: () => void;
   onSelect: () => void;
+  disabled?: boolean;
 };
 
 // Uses the canvas context submenu's top-layer positioning and pointer bridge.
-export function ToolbarSubmenu({ label, icon, indicator, content, open, parentRef, onOpen, onClose, onSelect }: Props) {
+export function ToolbarSubmenu({ label, icon, indicator, content, open, parentRef, onOpen, onClose, onSelect, disabled = false }: Props) {
   const trigger = useRef<HTMLButtonElement>(null), panel = useRef<HTMLDivElement>(null);
   const focusOnOpen = useRef(false);
   const id = useId();
@@ -31,6 +34,7 @@ export function ToolbarSubmenu({ label, icon, indicator, content, open, parentRe
   const focusFirst = () => panel.current?.querySelector<HTMLButtonElement>('button[role="menuitem"]')?.focus({ preventScroll: true });
 
   function expand(keyboard = false) {
+    if (disabled) return;
     hover.cancel();
     if (keyboard && open) { focusFirst(); return; }
     focusOnOpen.current = keyboard;
@@ -72,7 +76,7 @@ export function ToolbarSubmenu({ label, icon, indicator, content, open, parentRe
   }, [shown.value, open, parentRef]);
 
   return <>
-    <button ref={trigger} type="button" role="menuitem" tabIndex={-1} className="lc-button lc-button--ghost lc-button--s toolbar-submenu-trigger" data-submenu-trigger
+    <button ref={trigger} type="button" role="menuitem" disabled={disabled} tabIndex={-1} className="lc-button lc-button--ghost lc-button--s toolbar-submenu-trigger" data-submenu-trigger
       aria-haspopup="menu" aria-expanded={open} aria-controls={id} aria-describedby={!content.items.length && open ? `${id}-notice` : undefined}
       onPointerEnter={event => { if (event.pointerType !== 'touch') expand(); }}
       onPointerLeave={event => { if (!contains(event.relatedTarget)) hover.schedule(); }}
@@ -84,7 +88,7 @@ export function ToolbarSubmenu({ label, icon, indicator, content, open, parentRe
       {icon}<span className="toolbar-hover-item-label">{label}</span>{indicator}
     </button>
     {shown.value && <div ref={panel} id={id} popover="manual" role="menu" aria-label={label}
-      className="toolbar-hover-menu toolbar-submenu" data-overlay data-phase={shown.phase} inert={shown.phase === 'exit'}
+      className={`toolbar-hover-menu toolbar-submenu ${content.className ?? ''}`} data-node-id={content.nodeId} data-overlay data-phase={shown.phase} inert={shown.phase === 'exit'}
       onPointerEnter={hover.cancel}
       onPointerLeave={event => { if (!contains(event.relatedTarget)) hover.schedule(); }}
       onKeyDown={event => {

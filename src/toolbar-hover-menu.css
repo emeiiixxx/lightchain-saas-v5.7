@@ -16,7 +16,7 @@
 .toolbar-hover-menu[data-side='bottom']::before { bottom: 100%; }
 .toolbar-hover-menu[data-side='top']::before { top: 100%; }
 .toolbar-hover-menu > .lc-button { width: 100%; height: 32px; min-height: 32px; justify-content: flex-start; gap: 8px; padding: 0 8px; border: 0; border-radius: 8px; font-size: 14px; line-height: 20px; font-weight: 400; }
-.toolbar-hover-menu > .lc-button:is(:hover, :focus-visible) { background: var(--state-hover); color: var(--text-primary); }
+.toolbar-hover-menu > .lc-button:not(:disabled):is(:hover, :focus-visible) { background: var(--state-hover); color: var(--text-primary); }
 .toolbar-hover-menu > .toolbar-submenu-trigger[aria-expanded='true'] { background: var(--state-hover); color: var(--text-primary); }
 .toolbar-submenu::before { top: var(--submenu-bridge-top); bottom: auto; height: var(--submenu-bridge-height); width: var(--submenu-bridge-width); }
 .toolbar-submenu[data-side='right']::before { left: auto; right: 100%; }
@@ -25,10 +25,15 @@
 .toolbar-hover-item-label { flex: 1; text-align: start; }
 .image-edit-menu .toolbar-hover-trigger.lc-button:is(:hover, :focus-visible, [aria-expanded='true']) { background: var(--state-hover); color: var(--text-brand); }
 .image-edit-menu .toolbar-hover-trigger--icon.lc-button { width: 32px; min-width: 32px; padding: 0; }
-.image-edit-menu .toolbar-hover-menu { min-width: 160px; }
+.image-edit-menu .toolbar-hover-menu { min-width: 160px; padding: var(--spacing-xs); gap: var(--spacing-base); border: 1px solid var(--border-weak); border-radius: var(--radius-l); }
+.image-edit-menu .toolbar-hover-menu::after { border: 0; }
+.image-edit-menu .toolbar-hover-menu > .lc-button { padding-inline: var(--spacing-base); gap: var(--spacing-base); border-radius: var(--radius-base); }
+.image-edit-menu .toolbar-hover-item-label { white-space: nowrap; }
+.image-edit-menu .toolbar-submenu--grid { width: 160px; gap: var(--spacing-xs); }
+.image-edit-menu-trailing { display: inline-flex; align-items: center; flex: none; gap: var(--spacing-base); }
 .image-edit-menu-new {
   display: inline-flex; flex: none; align-items: center; justify-content: center;
-  height: 20px; padding: 0 8px; border-radius: 999px;
+  height: 20px; padding: 0 var(--spacing-base); border-radius: var(--radius-max);
   background: var(--brand-gradient-chat); color: var(--text-on-brand-black);
   font-size: 12px; line-height: 16px; font-weight: 500;
 }

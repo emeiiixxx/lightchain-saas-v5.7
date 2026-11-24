@@ -2,6 +2,7 @@ import { canvasMediaDisplayName } from '../../canvas-media-filename';
 import { EditableFilename } from '../../components/EditableFilename';
 import { ImageEditingMenu } from '../../components/ImageEditingMenu';
 import { CropEditor } from '../../components/CropEditor';
+import { prepareGridSplitResults } from '../grid-split';
 import { useInputMemory } from '../useInputMemory';
 import { useEventCallback } from '../useEventCallback';
 import { readDemoState, writeDemoState, restoreDemoUrls, rememberDemoAsset, deleteDemoAsset } from '../demo-storage';
@@ -399,6 +400,9 @@ export function Workbench({ board, open, onOpenChange, phase, onUpload, onReplac
   const cropSource = useRef<CanvasImage | null>(null);
   const cropEpoch = useRef(0);
   const cropBoard = useRef(board); cropBoard.current = board;
+  const gridSplitEpoch = useRef(0);
+  const pendingGridSplits = useRef(new Set<string>());
+  const [gridSplittingImages, setGridSplittingImages] = useState<string[]>([]);
   const closeCrop = useEventCallback(() => { cropEpoch.current++; cropSource.current = null; setCropImage(null); });
   const openCrop = (source: CanvasImage) => {
     if (board.locked || !board.restored) return;
@@ -406,12 +410,12 @@ export function Workbench({ board, open, onOpenChange, phase, onUpload, onReplac
     cropEpoch.current++; cropSource.current = source; setCropImage(source);
   };
   useEffect(() => {
-    const leave = () => closeCrop();
+    const leave = () => { closeCrop(); gridSplitEpoch.current++; };
     const routeChanged = () => { if (window.parent.location.hash.split('?')[0] !== '#/design-workspace') leave(); };
     window.addEventListener('lc-v57-design:leave-project', leave);
     if (window.parent !== window) window.parent.addEventListener('hashchange', routeChanged);
     return () => {
-      cropEpoch.current++; cropSource.current = null;
+      cropEpoch.current++; cropSource.current = null; gridSplitEpoch.current++;
       window.removeEventListener('lc-v57-design:leave-project', leave);
       if (window.parent !== window) window.parent.removeEventListener('hashchange', routeChanged);
     };
@@ -465,6 +469,54 @@ export function Workbench({ board, open, onOpenChange, phase, onUpload, onReplac
       generationTimers.current.clear();
     };
   }, []);
+  const splitImageGrid = async (opened: CanvasImage, grid: 4 | 9) => {
+    if (board.locked || !board.restored || pendingGridSplits.current.has(opened.id)) return;
+    const epoch = gridSplitEpoch.current;
+    const currentSource = () => generationMounted.current && epoch === gridSplitEpoch.current
+      && cropBoard.current.restored && !cropBoard.current.locked
+      && (window.parent === window || window.parent.location.hash.split('?')[0] === '#/design-workspace')
+      ? cropBoard.current.images.find(item => item.id === opened.id && item.url === opened.url
+        && !item.shape && !item.generating && !item.generationFailed) : undefined;
+    if (!currentSource()) return;
+    pendingGridSplits.current.add(opened.id);
+    setGridSplittingImages([...pendingGridSplits.current]);
+    setMenu(null);
+    let prepared: Awaited<ReturnType<typeof prepareGridSplitResults>> | undefined;
+    let committed = false;
+    try {
+      await restoringRecords.current;
+      if (!currentSource()) return;
+      prepared = await prepareGridSplitResults(opened, grid, locale, () => !!currentSource());
+      const source = currentSource();
+      if (!source) return;
+      const id = crypto.randomUUID();
+      const placeholders = cropBoard.current.beginGeneration(source.id, prepared.results.length, {
+        name: '宫格图切分', taskRecordId: id,
+        outputSizes: prepared.results.map(result => ({ width: result.image.naturalWidth, height: result.image.naturalHeight })),
+      });
+      if (placeholders.length !== prepared.results.length) throw new Error('Unable to add grid images');
+      cropBoard.current.finishGeneration(placeholders.map(item => item.id), prepared.results);
+      committed = true;
+      const now = new Date();
+      const time = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const record: GenerationRecord = {
+        id, title: '宫格图切分', time, sourceId: source.id,
+        supportsPrompt: false, replayable: false, count: prepared.results.length,
+        tags: [{ label: '原图', image: source.url }, { label: grid === 4 ? '4宫格' : '9宫格' }],
+        images: prepared.results.map((result, index) => ({
+          id: placeholders[index].id, url: result.url,
+          height: 92 * result.image.naturalHeight / result.image.naturalWidth, status: 'success',
+        })),
+      };
+      setGenerationRecords(previous => [record, ...previous]);
+    } catch {
+      if (currentSource()) onNotify('图片切分失败，请重试', 'error');
+    } finally {
+      if (prepared && !committed) await prepared.discard();
+      pendingGridSplits.current.delete(opened.id);
+      if (generationMounted.current) setGridSplittingImages([...pendingGridSplits.current]);
+    }
+  };
   const finishDemoBatch = (recordId: string, placeholders: CanvasImage[], results: Omit<CanvasImage, 'x' | 'y'>[], allowSimulatedFailure = true) => {
     // Existing quick-edit examples retain their retryable failure; Agent tasks
     // complete all reserved slots unless asset preparation actually fails.
@@ -947,6 +999,7 @@ export function Workbench({ board, open, onOpenChange, phase, onUpload, onReplac
           <ImageEditingMenu variant="canvas" locale={locale}
             image={{ id: selected.id, url: selected.url, naturalWidth: selected.image.naturalWidth, naturalHeight: selected.image.naturalHeight }}
             open={menu === 'more'} onOpenChange={nextOpen => setMenu(current => nextOpen ? 'more' : current === 'more' ? null : current)}
+            onGridSplit={grid => { void splitImageGrid(selected, grid); }} gridSplitDisabled={gridSplittingImages.includes(selected.id)}
             onAction={action => action === 'smartCrop' ? openCrop(selected) : unavailable()} />
         </div>
         <Divider vertical /><Button onClick={unavailable}><Icon name="element-tech" size={20} />{t("工艺单")}</Button>

@@ -11,7 +11,7 @@ type Props = {
   chevron: ReactNode;
   group: string;
   nodeId: string;
-  items: { label: string; icon: ReactNode; trailing?: ReactNode; submenu?: ToolbarSubmenuContent; onSelect: () => void }[];
+  items: { label: string; icon: ReactNode; trailing?: ReactNode; submenu?: ToolbarSubmenuContent; disabled?: boolean; onSelect: () => void }[];
   iconOnly?: boolean;
   openOnHover?: boolean;
   className?: string;
@@ -101,7 +101,7 @@ export function ToolbarHoverMenu({ label, icon, chevron, group, nodeId, items, i
     document.dispatchEvent(new CustomEvent('lc-toolbar-menu-open', { detail: { group, id } }));
     setOpen(true);
     if (focus) requestAnimationFrame(() => {
-      const options = Array.from(panel.current?.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]') ?? []).filter(button => button.closest('[role="menu"]') === panel.current);
+      const options = Array.from(panel.current?.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]:not(:disabled)') ?? []).filter(button => button.closest('[role="menu"]') === panel.current);
       options?.[focus === 'last' ? options.length - 1 : 0]?.focus();
     });
   }
@@ -124,17 +124,18 @@ export function ToolbarHoverMenu({ label, icon, chevron, group, nodeId, items, i
         if (event.key === 'Tab') { close(true); return; }
         if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
         event.preventDefault(); event.stopPropagation();
-        const options = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')).filter(button => button.closest('[role="menu"]') === event.currentTarget);
+        const options = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]:not(:disabled)')).filter(button => button.closest('[role="menu"]') === event.currentTarget);
+        if (!options.length) return;
         const index = options.indexOf(document.activeElement as HTMLButtonElement);
         const next = event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
         setActiveSubmenu(null);
         options[next]?.focus();
       }}>
       {items.map(item => item.submenu ? <ToolbarSubmenu key={item.label} label={item.label} icon={item.icon} indicator={item.trailing}
-        content={item.submenu} open={open && activeSubmenu === item.label} parentRef={panel}
+        content={item.submenu} disabled={item.disabled} open={open && !item.disabled && activeSubmenu === item.label} parentRef={panel}
         onOpen={() => { hover.cancel(); setActiveSubmenu(item.label); }}
         onClose={() => setActiveSubmenu(current => current === item.label ? null : current)} onSelect={() => close(true)} />
-        : <Button key={item.label} role="menuitem" tabIndex={-1} onPointerEnter={() => setActiveSubmenu(null)} onFocus={() => setActiveSubmenu(null)} onClick={() => { close(true); item.onSelect(); }}>{item.icon}<span className="toolbar-hover-item-label">{item.label}</span>{item.trailing}</Button>)}
+        : <Button key={item.label} role="menuitem" disabled={item.disabled} tabIndex={-1} onPointerEnter={() => setActiveSubmenu(null)} onFocus={() => setActiveSubmenu(null)} onClick={() => { close(true); item.onSelect(); }}>{item.icon}<span className="toolbar-hover-item-label">{item.label}</span>{item.trailing}</Button>)}
     </div>}
   </div>;
 }

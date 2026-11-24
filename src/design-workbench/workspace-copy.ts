@@ -1,5 +1,9 @@
 // Workspace copy: Simplified Chinese key, English, Japanese.
 export const workspaceCopy: Record<string, readonly [string, string]> = {
+'宫格图切分': ['Grid split', 'グリッド分割'],
+'4宫格': ['2×2 grid', '4分割'],
+'9宫格': ['3×3 grid', '9分割'],
+'图片切分失败，请重试': ['Unable to split the image. Please retry.', '画像を分割できませんでした。再試行してください。'],
 '印花裂变': ['Print variations', 'プリントバリエーション'],
 '请选择需要保留的设计点，支持多选，必填': ['Select one or more design features to keep.', '残したいデザインの特徴を選択してください（複数選択可・必須）。'],
 '设计点': ['Design features', 'デザインの特徴'],

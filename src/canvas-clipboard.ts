@@ -36,11 +36,11 @@ export function copyCanvasSelection(items: CanvasImage[], selected: string[], op
         fusion: {
           kind: item.fusion.kind, position, prompt: item.fusion.prompt, ratio: item.fusion.ratio, ratioMode: item.fusion.ratioMode, resolution: item.fusion.resolution,
           customRatioInput: item.fusion.customRatioInput ? { ...item.fusion.customRatioInput } : undefined,
-          batchFlat: item.fusion.batchFlat, flatRegion: item.fusion.flatRegion, flatFace: item.fusion.flatFace,
+          batchFlat: item.fusion.batchFlat, flatRegion: item.fusion.flatRegion, flatFace: item.fusion.flatFace, grid: item.fusion.grid,
           drawingGuide: sourceId && imageIds.has(sourceId) ? item.fusion.drawingGuide : undefined,
           mainImages: item.fusion.kind === 'batch' ? options?.preserveSelectedInputs
             ? batchMainImages(item.fusion).filter(reference => imageIds.has(reference.sourceImageId ?? reference.id)).map(reference => ({ ...reference })) : [] : undefined,
-          references: isMultiInputWorkflow(item.fusion) && !isReferenceOnlyFusion(item.fusion) && item.fusion.kind !== 'batch'
+          references: isMultiInputWorkflow(item.fusion) && !isReferenceOnlyFusion(item.fusion) && item.fusion.kind !== 'batch' && item.fusion.kind !== 'gridSplit'
             ? options?.preserveSelectedInputs ? fusionReferences(item.fusion).filter(reference => imageIds.has(reference.sourceImageId ?? reference.id)).map(reference => ({ ...reference })) : []
             : fusionReferences(item.fusion).map(reference => ({ ...reference,
             id: reference.sourceImageId && imageIds.has(reference.sourceImageId) ? reference.id : crypto.randomUUID(),
@@ -84,7 +84,7 @@ export function pasteCanvasSelection(items: CanvasImage[], dx: number, dy: numbe
             const sourceImageId = remapImage(originalId);
             return sourceImageId ? [{ ...reference, name: names.get(originalId) ?? reference.name, id: sourceImageId, sourceImageId }] : [];
           }) : [] : undefined,
-        references: isMultiInputWorkflow(item.fusion) && !isReferenceOnlyFusion(item.fusion) && item.fusion.kind !== 'batch' && !options?.preserveSelectedInputs ? [] : fusionReferences(item.fusion).map(reference => {
+        references: isMultiInputWorkflow(item.fusion) && !isReferenceOnlyFusion(item.fusion) && item.fusion.kind !== 'batch' && item.fusion.kind !== 'gridSplit' && !options?.preserveSelectedInputs ? [] : fusionReferences(item.fusion).map(reference => {
           const originalId = reference.sourceImageId ?? (isMultiInputWorkflow(item.fusion) && !isReferenceOnlyFusion(item.fusion) ? reference.id : undefined);
           const sourceImageId = remapImage(originalId);
           return { ...reference, name: originalId ? names.get(originalId) ?? reference.name : reference.name, id: sourceImageId ?? crypto.randomUUID(), sourceImageId };

@@ -33,7 +33,7 @@ const examples = {
     result: { name: '黄紫拼色内衣上身 · 试衣演示', url: '/assets/workflow-examples/lingerie-result.png' },
     prompt: '将主图中的黄紫拼色内衣套装穿到参考模特身上，保留淡黄色蕾丝、浅紫色罩杯、黑色肩带与包边，以及配套高腰内裤的拼色和侧边镂空细节。保留模特的金色长发、双臂抬起的姿势，搭配暖桃色背景与粉色球形布景，呈现自然贴合、柔和光影的内衣产品大片。',
   },
-} satisfies Record<Exclude<WorkflowKind, 'merge' | 'batch'>, unknown>;
+} satisfies Record<Exclude<WorkflowKind, 'merge' | 'batch' | 'gridSplit'>, unknown>;
 
 const batchTryOnPath = '/assets/workflow-examples/batch-try-on';
 const batchTryOnGarments = [
@@ -50,7 +50,7 @@ const batchTryOnCopy = {
 };
 
 // Preserve each supplied result image’s original aspect ratio.
-export function workflowExampleResult(kind: WorkflowKind, inputUrl?: string) {
+export function workflowExampleResult(kind: Exclude<WorkflowKind, 'gridSplit'>, inputUrl?: string) {
   if (kind === 'batch') {
     const garment = batchTryOnGarments.find(item => inputUrl === `${batchTryOnPath}/garment-${item.file}.jpg`);
     if (garment) return { name: `${garment['zh-CN']} · 批量编辑演示`, url: `${batchTryOnPath}/result-${garment.file}.jpg`, width: 360, height: 540 };
@@ -59,7 +59,7 @@ export function workflowExampleResult(kind: WorkflowKind, inputUrl?: string) {
   return { ...examples[kind].result, width: 360, height: kind === 'lingerie' ? 360 * 1064 / 794 : kind === 'fusion' ? 360 * 2400 / 1792 : 540 };
 }
 
-export async function createWorkflowExample(kind: Exclude<WorkflowKind, 'merge'>, locale: Locale = 'zh-CN'): Promise<CanvasImage[]> {
+export async function createWorkflowExample(kind: Exclude<WorkflowKind, 'merge' | 'gridSplit'>, locale: Locale = 'zh-CN'): Promise<CanvasImage[]> {
   if (kind === 'batch') {
     const copy = batchTryOnCopy[locale];
     const [mains, model, outputs] = await Promise.all([

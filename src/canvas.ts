@@ -9,24 +9,27 @@ import { packStandaloneRows } from './canvas-standalone-layout';
 import type { GeneratedMediaFile } from './canvas-media-filename';
 import type { CanvasLayoutMetadata } from './canvas-layout-groups';
 import { demoGenerationSettingsMemory, rememberedWorkflowKind } from './generation-settings-memory';
+import { materialWorkflowSize } from './material-workflow';
 export type Viewport = { x: number; y: number; zoom: number };
 export type FusionReference = { id: string; name: string; url: string; sourceImageId?: string; drawingGuide?: DrawingGuide; width?: number; height?: number; naturalWidth?: number; naturalHeight?: number };
 export const MAX_FUSION_REFERENCES = 9;
 export const MAX_REFERENCE_ONLY_FUSION_REFERENCES = 10;
 export const MAX_BATCH_MAIN_IMAGES = 20;
-export type WorkflowKind = 'fusion' | 'lingerie' | 'directed' | 'flat' | 'merge' | 'batch';
+export type WorkflowKind = 'fusion' | 'lingerie' | 'directed' | 'flat' | 'merge' | 'batch' | 'gridSplit';
 export type FlatRegion = 'top' | 'bottom' | 'full';
 export type FlatFace = 'front' | 'back';
 export type DirectedFusionPoint = { id: string; reference: FusionReference; maskPreviewUrl?: string; maskSourceUrl?: string };
 export const MAX_DIRECTED_POINTS = 3;
-export type FusionSettings = { positionPinned?: boolean; kind?: WorkflowKind; position?: { x: number; y: number }; prompt: string; ratio: string; ratioMode?: 'custom'; customRatioInput?: { width: string; height: string }; resolution: string; reference?: FusionReference; references?: FusionReference[]; mainImages?: FusionReference[]; directedPoints?: DirectedFusionPoint[]; flatRegion?: FlatRegion; flatFace?: FlatFace; batchFlat?: boolean; drawingGuide?: DrawingGuide };
+export type FusionSettings = { positionPinned?: boolean; kind?: WorkflowKind; position?: { x: number; y: number }; prompt: string; ratio: string; ratioMode?: 'custom'; customRatioInput?: { width: string; height: string }; resolution: string; reference?: FusionReference; references?: FusionReference[]; mainImages?: FusionReference[]; directedPoints?: DirectedFusionPoint[]; flatRegion?: FlatRegion; flatFace?: FlatFace; batchFlat?: boolean; grid?: 4 | 9; drawingGuide?: DrawingGuide };
 export const fusionReferences = (settings?: FusionSettings): FusionReference[] => settings?.references ?? (settings?.reference ? [settings.reference] : []);
 export const batchMainImages = (settings?: FusionSettings): FusionReference[] => settings?.mainImages ?? [];
 export const workflowInputs = (settings?: FusionSettings): FusionReference[] => settings?.kind === 'batch' ? batchMainImages(settings) : fusionReferences(settings);
 export const isReferenceOnlyFusion = (settings?: FusionSettings) => !!settings && (!settings.kind || settings.kind === 'fusion');
-export const isMultiInputWorkflow = (settings?: FusionSettings) => isReferenceOnlyFusion(settings) || settings?.kind === 'batch' || settings?.kind === 'merge' || (settings?.kind === 'flat' && settings.batchFlat === true);
-export const workflowReferenceLimit = (settings?: FusionSettings) => isReferenceOnlyFusion(settings) ? MAX_REFERENCE_ONLY_FUSION_REFERENCES : settings?.batchFlat ? 20 : settings?.kind === 'lingerie' ? 1 : MAX_FUSION_REFERENCES;
-export const defaultFusion = (kind: WorkflowKind = 'fusion'): FusionSettings => ({ kind, prompt: '', ratio: 'auto', resolution: '2K', ...(kind === 'fusion' ? { references: [] } : {}), ...(kind === 'batch' ? { mainImages: [], references: [] } : {}), ...(kind === 'directed' ? { directedPoints: [] } : {}), ...(kind === 'flat' ? { flatRegion: 'top', flatFace: 'front' } : {}) });
+// Reference-list workflows have no separate main-image slot. A grid split is
+// deliberately limited to one reference even though it uses the same graph path.
+export const isMultiInputWorkflow = (settings?: FusionSettings) => isReferenceOnlyFusion(settings) || settings?.kind === 'gridSplit' || settings?.kind === 'batch' || settings?.kind === 'merge' || (settings?.kind === 'flat' && settings.batchFlat === true);
+export const workflowReferenceLimit = (settings?: FusionSettings) => isReferenceOnlyFusion(settings) ? MAX_REFERENCE_ONLY_FUSION_REFERENCES : settings?.batchFlat ? 20 : settings?.kind === 'lingerie' || settings?.kind === 'gridSplit' ? 1 : MAX_FUSION_REFERENCES;
+export const defaultFusion = (kind: WorkflowKind = 'fusion'): FusionSettings => ({ kind, prompt: '', ratio: 'auto', resolution: '2K', ...(kind === 'fusion' ? { references: [] } : {}), ...(kind === 'gridSplit' ? { references: [], grid: 4 } : {}), ...(kind === 'batch' ? { mainImages: [], references: [] } : {}), ...(kind === 'directed' ? { directedPoints: [] } : {}), ...(kind === 'flat' ? { flatRegion: 'top', flatFace: 'front' } : {}) });
 // Read preferences only for new nodes. Loading, copying, restoring and clearing
 // existing nodes must keep the settings that belong to their snapshot.
 export function newFusionSettings(kind: WorkflowKind = 'fusion'): FusionSettings {
@@ -50,6 +53,7 @@ function referenceGridRows(settings?: FusionSettings) {
 // plus 129px card + 12px gap per point.
 // The 56px add entry and its 12px gap disappear at the three-point limit.
 export function workflowHeight(settings?: FusionSettings) {
+  if (settings?.kind === 'gridSplit') return materialWorkflowSize({ kind: 'gridSplit', view: ['front'] }).height;
   if (settings?.kind === 'batch') return 404;
   if (settings?.kind === 'merge') return 505 - 56 + Math.min(208, referenceGridRows(settings) * 72 - 8);
   if (settings?.kind === 'flat' && settings.batchFlat) {
@@ -406,11 +410,11 @@ export function createFusionEditor(items: CanvasImage[], sourceId: string, id: s
   if (!source) return null;
   const x = source.x + source.width + FUSION_GAP;
   const fusion = newFusionSettings(kind);
-  if (isReferenceOnlyFusion(fusion)) fusion.references = [{ id: source.id, name: source.name, url: source.url, sourceImageId: source.id }];
+  if (isReferenceOnlyFusion(fusion) || kind === 'gridSplit') fusion.references = [{ id: source.id, name: source.name, url: source.url, sourceImageId: source.id }];
   const width = workflowWidth(fusion), height = workflowHeight(fusion);
   const y = source.y + (source.height - height) / 2;
   return {id, name: source.name, url: '', x, y, width, height,
-    nodeOnly: true, editorSourceId: isReferenceOnlyFusion(fusion) ? undefined : source.id, fusion: {...fusion, position: {x,y}}};
+    nodeOnly: true, editorSourceId: isMultiInputWorkflow(fusion) ? undefined : source.id, fusion: {...fusion, position: {x,y}}};
 }
 
 // Refill the existing editor with a separate media instance. Results, selection

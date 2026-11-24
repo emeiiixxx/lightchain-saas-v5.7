@@ -61,6 +61,7 @@ type Props = {
   onReference: (field: 'references' | 'back', source: 'upload' | 'canvas') => void;
   onPreview: (reference: VideoReference) => void;
   onGenerate: () => void;
+  preparing?: boolean;
 };
 
 function NodeIcon({ src, size = 16, className = '' }: { src: string; size?: number; className?: string }) {
@@ -79,7 +80,7 @@ function navigateChoices(event: KeyboardEvent<HTMLDivElement>, selectOnFocus = t
   if (selectOnFocus) buttons[next]?.click();
 }
 
-export function MaterialWorkflowNode({ node, locale, onChange, onReference, onPreview, onGenerate }: Props) {
+export function MaterialWorkflowNode({ node, locale, onChange, onReference, onPreview, onGenerate, preparing = false }: Props) {
   const t = copy[locale];
   const id = useId();
   const root = useRef<HTMLElement>(null);
@@ -92,7 +93,7 @@ export function MaterialWorkflowNode({ node, locale, onChange, onReference, onPr
   const hasSettings = node.kind === 'quick' || node.kind === 'multiView';
   const selectedViews = materialWorkflowViews(node);
   const hasBackView = materialWorkflowHasBackView(node);
-  const canGenerate = canGenerateMaterialWorkflow(node);
+  const canGenerate = canGenerateMaterialWorkflow(node) && !preparing;
   const assets = references.length ? videoNodeAssetSets.referencesFilled : videoNodeAssetSets.referencesEmpty;
   const title = materialWorkflowTitle(node.kind, locale);
   const sortNode: VideoWorkflow = {
@@ -228,7 +229,7 @@ export function MaterialWorkflowNode({ node, locale, onChange, onReference, onPr
       </div>}
     </div>
     <footer className="fusion-node-action material-workflow-action nodrag nopan">
-      <GenerateTaskButton label={t.generate} cost="20" costIcon={<NodeIcon src={assets.generateStar} />} disabled={!canGenerate} onClick={generate} />
+      <GenerateTaskButton label={t.generate} cost="20" costIcon={<NodeIcon src={assets.generateStar} />} disabled={!canGenerate} aria-busy={preparing} onClick={generate} />
     </footer>
     {supportsReferenceSorting && <span className="sr-only" id={`${id}-reorder`}>{t.reorder}</span>}
   </section>;
