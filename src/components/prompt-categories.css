@@ -1,0 +1,51 @@
+/* v5.7 Figma 152:11861 / 152:12145: shared category navigation and editing. */
+.prompt-library aside > header { flex-shrink: 0; }
+.prompt-library aside > nav { flex: 1; min-height: 0; }
+.prompt-library > aside > header { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0; border-bottom: 1px solid var(--border-weak); }
+.prompt-library > aside > header > .prompt-library-title-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-3xl); padding: var(--spacing-2xl) var(--spacing-2xl) 0; }
+.prompt-library > aside > header > .prompt-library-search-row { display: flex; padding: 0 var(--spacing-2xl) var(--spacing-2xl); }
+.prompt-library .prompt-library-search-row > .prompt-library-search { display: flex; flex: 1; min-width: 0; flex-direction: row; align-items: center; gap: var(--spacing-base); }
+.prompt-category-tabs { position: relative; display: flex; flex: 0 0 auto; align-items: flex-start; gap: var(--spacing-xs); padding: var(--spacing-base) var(--spacing-xl); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-behavior: auto; }
+.prompt-library > aside > header > .prompt-category-tabs { justify-content: flex-start; align-items: flex-start; gap: var(--spacing-xs); }
+.prompt-category-tabs::-webkit-scrollbar { display: none; }
+/* Beta Tab M centers the 20px label, 4px gap and 2px indicator in 32px. */
+.prompt-library .prompt-category-tab { position: relative; flex: 0 0 auto; flex-direction: column; justify-content: center; gap: var(--spacing-xs); min-width: 0; height: var(--height-2xl); padding: 0 var(--spacing-base); border: 0; border-radius: 0; background: transparent; color: var(--text-tertiary); font-size: 14px; font-weight: 500; line-height: 20px; white-space: nowrap; }
+.prompt-library .prompt-category-tab:hover:not(:disabled):not([aria-selected='true']) { background: transparent; color: var(--text-primary); }
+.prompt-library .prompt-category-tab[aria-selected='true'],.prompt-library .prompt-category-tab[aria-selected='true']:is(:hover,:active) { background: transparent; color: var(--text-brand); }
+.prompt-category-tab::after { content: ''; display: block; flex: none; align-self: stretch; height: 2px; border-radius: var(--radius-s); background: currentColor; opacity: 0; transition: opacity var(--motion-duration) var(--motion-easing); }
+.prompt-category-tab[aria-selected='true']::after { opacity: 1; }
+.prompt-category-tab:focus-visible { outline: 2px solid var(--border-brand); outline-offset: -2px; }
+.prompt-category-field { display: flex; flex: none; min-width: 0; flex-direction: column; gap: var(--spacing-base); }
+.prompt-category-label { color: var(--text-primary); font-size: 16px; font-weight: 500; line-height: 24px; }
+.prompt-category-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-base); }
+.prompt-category-heading .prompt-category-label { flex: 1; min-width: 0; }
+.prompt-category-heading .lc-button.prompt-category-manage { gap: var(--spacing-xs); border: 1px solid var(--border-weak); background: var(--control-fill-default); font-size: 12px; line-height: 20px; }
+.prompt-category-heading .lc-button.prompt-category-manage:not(.lc-button--xs) { height: var(--height-2xl); padding-inline: var(--spacing-xl); border-radius: var(--radius-base); }
+.prompt-category-heading .lc-button.prompt-category-manage.lc-button--xs { border: 0; box-shadow: inset 0 0 0 1px var(--border-weak); }
+.prompt-category-heading .lc-button.prompt-category-manage:hover:not(:disabled) { background: var(--state-hover); }
+.prompt-category-options { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.prompt-category-options .prompt-category-choice { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.prompt-category-custom { display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-base); }
+.prompt-category-custom-actions { display: flex; flex: none; align-items: center; gap: var(--spacing-base); }
+.prompt-category-name-input { display: flex; flex: 1; align-items: center; gap: var(--spacing-base); min-width: min(240px, 100%); height: var(--height-3xl); padding-inline: var(--spacing-xl); border: 1px solid var(--border-weak); border-radius: var(--radius-base); background: var(--state-default); }
+.prompt-category-name-input:hover { background: var(--state-hover); }
+.prompt-category-name-input:focus-within { background: var(--control-fill-focus); border-color: var(--brand-primary); }
+.prompt-category-field .prompt-category-name-input input { flex: 1; min-width: 0; width: 100%; height: 100%; border: 0; padding: 0; border-radius: 0; outline: none; background: transparent; color: var(--text-secondary); font: inherit; font-size: 14px; font-weight: 400; line-height: 20px; }
+.prompt-category-name-input > span { flex: none; color: var(--text-tertiary); font-size: 12px; line-height: 16px; }
+.prompt-category-name-input input::placeholder { color: var(--text-placeholder); opacity: 1; }
+.prompt-category-field .prompt-category-custom-actions > .lc-button:not(.lc-button--xs) { padding-inline: var(--spacing-2xl); border: 0; line-height: 24px; }
+.prompt-category-field .lc-button.prompt-category-add { padding-inline: var(--spacing-base); border-radius: var(--radius-m); }
+.prompt-category-field .prompt-category-error { margin: 0; color: var(--status-danger); font-size: 12px; line-height: 16px; }
+.prompt-category-field--m .prompt-category-custom,.prompt-category-field--s .prompt-category-custom { justify-content: flex-end; }
+.prompt-category-field--m .prompt-category-name-input,.prompt-category-field--s .prompt-category-name-input { flex-basis: 100%; min-width: 0; height: var(--height-2xl); }
+.prompt-detail-heading { display: flex; align-items: center; flex: none; flex-wrap: wrap; gap: var(--spacing-base); min-width: 0; }
+.prompt-library .prompt-detail-heading h3 { flex: 1; min-width: 0; }
+/* Figma 160:14583: Badge/Text/Rounded, Neutral / Filled / M. */
+.prompt-category-badge { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; gap: var(--spacing-xs); max-width: 100%; height: var(--height-xl); padding: 0 var(--spacing-base); border-radius: var(--radius-m); background: var(--brand-secondary); color: var(--text-primary); font-size: 12px; font-weight: 500; line-height: 16px; white-space: nowrap; }
+.prompt-category-badge > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* Quick save shares category behavior, keeping its compact input and chip sizes. */
+.prompt-save-popover { max-height: calc(100dvh - 16px); overflow-y: auto; }
+.prompt-save-popover > header,.prompt-save-popover > .prompt-name-input,.prompt-save-popover > footer { flex-shrink: 0; }
+.prompt-save-popover .prompt-category-name-input { padding-inline: var(--spacing-base); }
+.prompt-save-popover .prompt-category-name-input input { font-size: 12px; line-height: 16px; }

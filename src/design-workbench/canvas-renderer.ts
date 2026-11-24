@@ -1,0 +1,200 @@
+import { canvasMediaDisplayName } from '../canvas-media-filename';
+import type { CanvasImage } from './useCanvas';
+import { paintShape } from './canvas-shapes';
+import { imageBounds } from './canvas-selection';
+import { intersectsViewport, screenBounds } from './canvas-toolbar';
+import type { CanvasRasterCache } from './canvas-raster-cache';
+
+type Camera = { x: number; y: number; zoom: number };
+type Viewport = { width: number; height: number };
+export type CanvasPalette = { background: string; surface: string; text: string; filenameText: string; filenameIcon: HTMLImageElement | null; foregroundFilenameIds: ReadonlySet<string>; track: string; progress: string; loadingLabel: string; badgeBackground: string; badgeText: string; coverId?: string; coverLabel: string; vectorLabel: string; fontFamily: string };
+
+// Figma 31:17639: 16px image icon, 4px gap, 12/16 text and an 8px
+// image gap stay in screen pixels; only the row width follows the image zoom.
+export const IMAGE_FILENAME_TOP_SPACE = 24;
+const filenameLabels = new Map<string, string>();
+export function clearCanvasTextCache() { filenameLabels.clear(); }
+
+function filenameLabel(ctx: CanvasRenderingContext2D, name: string, available: number) {
+  const key = JSON.stringify([ctx.font, name, available]);
+  const cached = filenameLabels.get(key);
+  if (cached !== undefined) return cached;
+  let label = name;
+  if (ctx.measureText(name).width > available) {
+    const letters = Array.from(name), ellipsis = '…';
+    let low = 0, high = letters.length;
+    while (low < high) {
+      const middle = Math.ceil((low + high) / 2);
+      if (ctx.measureText(letters.slice(0, middle).join('') + ellipsis).width <= available) low = middle;
+      else high = middle - 1;
+    }
+    label = ctx.measureText(ellipsis).width <= available ? letters.slice(0, low).join('') + ellipsis : '';
+  }
+  if (filenameLabels.size >= 1024) filenameLabels.delete(filenameLabels.keys().next().value!);
+  filenameLabels.set(key, label);
+  return label;
+}
+const tintedFilenameIcons = new Map<string, HTMLCanvasElement>();
+function filenameIcon(source: HTMLImageElement, color: string) {
+  const key = `${source.src}:${color}`;
+  const cached = tintedFilenameIcons.get(key);
+  if (cached) return cached;
+  const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
+  const context = canvas.getContext('2d');
+  if (!context) return source;
+  context.drawImage(source, 0, 0, 32, 32);
+  context.globalCompositeOperation = 'source-in';
+  context.fillStyle = color; context.fillRect(0, 0, 32, 32);
+  tintedFilenameIcons.set(key, canvas);
+  return canvas;
+}
+
+export function paintCanvasImageFilename(ctx: CanvasRenderingContext2D, image: CanvasImage, palette: CanvasPalette, zoom: number) {
+  if (image.shape || image.generating || image.generationFailed) return;
+  const bounds = imageBounds(image), width = bounds.width * zoom;
+  if (!image.name || width <= 0) return;
+  ctx.save(); ctx.translate(bounds.x, bounds.y); ctx.scale(1 / zoom, 1 / zoom);
+  ctx.globalAlpha = 1;
+  ctx.beginPath(); ctx.rect(0, -IMAGE_FILENAME_TOP_SPACE, width, 16); ctx.clip();
+  if (palette.filenameIcon) ctx.drawImage(filenameIcon(palette.filenameIcon, palette.filenameText), 0, -IMAGE_FILENAME_TOP_SPACE, 16, 16);
+  ctx.font = `400 12px ${palette.fontFamily}`;
+  ctx.fillStyle = palette.filenameText; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(filenameLabel(ctx, canvasMediaDisplayName(image.name), width - 20), 20, -IMAGE_FILENAME_TOP_SPACE + 8);
+  ctx.restore();
+}
+
+function paintImageBadges(ctx: CanvasRenderingContext2D, img: CanvasImage, palette: CanvasPalette) {
+  const vector = img.mimeType === 'image/svg+xml' || /\.svg(?:[?#]|$)/i.test(img.name) || /\.svg(?:[?#]|$)|^data:image\/svg\+xml/i.test(img.url);
+  const labels = [...(img.id === palette.coverId ? [palette.coverLabel] : []), ...(vector ? [palette.vectorLabel] : [])];
+  if (!labels.length) return;
+  // Figma 139:6732: metadata in image coordinates inherits canvas zoom.
+  // Painting in image order preserves occlusion and edit isolation.
+  ctx.save(); ctx.globalAlpha = 1;
+  ctx.beginPath(); ctx.rect(-img.width / 2, -img.height / 2, img.width, img.height); ctx.clip();
+  ctx.translate(-img.width / 2, -img.height / 2);
+  ctx.font = `400 12px ${palette.fontFamily}`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  let left = 4;
+  for (const label of labels) {
+    const width = Math.ceil(ctx.measureText(label).width) + 8;
+    ctx.fillStyle = palette.badgeBackground;
+    ctx.beginPath(); ctx.roundRect(left, 4, width, 20, 4); ctx.fill();
+    ctx.fillStyle = palette.badgeText; ctx.fillText(label, left + 4, 14);
+    left += width + 4;
+  }
+  ctx.restore();
+}
+
+function visible(image: CanvasImage, camera: Camera, viewport: Viewport) {
+  const box = imageBounds(image);
+  // Include outside/rotated strokes and antialiasing in the culling bounds.
+  const margin = (image.strokeWidth ?? 0) * Math.SQRT2 + (IMAGE_FILENAME_TOP_SPACE + 2) / camera.zoom;
+  return intersectsViewport(screenBounds({ x: box.x - margin, y: box.y - margin, width: box.width + margin * 2, height: box.height + margin * 2 }, camera), viewport);
+}
+
+// Shared native-size image painter; isolation never changes individual alpha values.
+export function paintCanvasImage(ctx: CanvasRenderingContext2D, img: CanvasImage, palette: CanvasPalette, rasters?: CanvasRasterCache) {
+  if (img.shape) {
+    ctx.save(); ctx.translate(img.x + img.width / 2, img.y + img.height / 2);
+    ctx.rotate((img.rotation ?? 0) * Math.PI / 180); ctx.scale(img.flipX ? -1 : 1, img.flipY ? -1 : 1);
+    ctx.globalAlpha = (img.opacity ?? 100) / 100; paintShape(ctx, img); ctx.restore(); return;
+  }
+  if (img.generating || img.generationFailed || !img.image.complete || !img.image.naturalWidth) return;
+  const transform = ctx.getTransform();
+  const pixelScale = Math.max(Math.hypot(transform.a, transform.b), Math.hypot(transform.c, transform.d));
+  const raster = img.mimeType === 'image/gif' || img.mimeType === 'image/svg+xml' ? img.image
+    : rasters?.get(img.image, pixelScale * Math.max(img.width / img.image.naturalWidth, img.height / img.image.naturalHeight)) ?? img.image;
+  const rasterWidth = raster === img.image ? img.image.naturalWidth : (raster as ImageBitmap | HTMLCanvasElement).width;
+  const rasterHeight = raster === img.image ? img.image.naturalHeight : (raster as ImageBitmap | HTMLCanvasElement).height;
+  ctx.save();
+  ctx.translate(img.x + img.width / 2, img.y + img.height / 2);
+  ctx.rotate((img.rotation ?? 0) * Math.PI / 180);
+  const x = -img.width / 2, y = -img.height / 2;
+  const radius = Math.min(img.radius ?? 0, img.width / 2, img.height / 2);
+  ctx.globalAlpha = (img.opacity ?? 100) / 100;
+  ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, img.width, img.height, radius); ctx.clip();
+  ctx.scale(img.flipX ? -1 : 1, img.flipY ? -1 : 1);
+  if (img.fit === 'cover') {
+    const scale = Math.max(img.width / rasterWidth, img.height / rasterHeight);
+    const sw = img.width / scale, sh = img.height / scale;
+    ctx.drawImage(raster, (rasterWidth - sw) / 2, (rasterHeight - sh) / 2, sw, sh, x, y, img.width, img.height);
+  } else ctx.drawImage(raster, x, y, img.width, img.height);
+  ctx.restore();
+  if ((img.strokeWidth ?? 0) > 0 && (img.strokeOpacity ?? 100) > 0) {
+    const sw = img.strokeWidth!;
+    const offset = img.strokeAlign === 'inside' ? sw / 2 : img.strokeAlign === 'outside' ? -sw / 2 : 0;
+    ctx.globalAlpha = (img.opacity ?? 100) / 100 * (img.strokeOpacity ?? 100) / 100;
+    ctx.strokeStyle = img.stroke ?? '#DADADA'; ctx.lineWidth = sw;
+    ctx.setLineDash(img.strokeStyle === 'dashed' ? [sw * 4, sw * 3] : img.strokeStyle === 'dotted' ? [sw, sw * 2] : []);
+    ctx.beginPath(); ctx.roundRect(x + offset, y + offset, Math.max(1, img.width - offset * 2), Math.max(1, img.height - offset * 2), Math.max(0, radius - offset)); ctx.stroke();
+  }
+  paintImageBadges(ctx, img, palette);
+  ctx.restore();
+}
+
+function paintPendingTile(ctx: CanvasRenderingContext2D, img: CanvasImage, palette: CanvasPalette, zoom: number) {
+  ctx.save();
+  ctx.translate(img.x + img.width / 2, img.y + img.height / 2);
+  ctx.rotate((img.rotation ?? 0) * Math.PI / 180);
+  ctx.beginPath(); ctx.rect(-img.width / 2, -img.height / 2, img.width, img.height); ctx.clip();
+  ctx.fillStyle = palette.surface; ctx.fillRect(-img.width / 2, -img.height / 2, img.width, img.height);
+  // Static indeterminate marker while isolated. The task itself continues normally.
+  const width = Math.max(0, Math.min(Math.max(img.width * .6, 80 / zoom), Math.max(240, 80 / zoom), img.width - 16 / zoom));
+  const height = Math.max(8, 4 / zoom), gap = Math.max(8, 4 / zoom);
+  const fontSize = Math.max(12, 12 / zoom), lineHeight = Math.max(16, 16 / zoom);
+  const top = -(height + gap + lineHeight) / 2;
+  ctx.fillStyle = palette.track; ctx.beginPath(); ctx.roundRect(-width / 2, top, width, height, height / 2); ctx.fill();
+  ctx.fillStyle = palette.progress; ctx.beginPath(); ctx.roundRect(-width * .15, top, width * .3, height, height / 2); ctx.fill();
+  ctx.fillStyle = palette.text; ctx.font = `${fontSize}px ${palette.fontFamily}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText(palette.loadingLabel, 0, top + height + gap);
+  ctx.restore();
+}
+
+export function paintCanvasScene(ctx: CanvasRenderingContext2D, images: CanvasImage[], camera: Camera, viewport: Viewport, palette: CanvasPalette, excludedId?: string, includePending = false, rasters?: CanvasRasterCache) {
+  ctx.save(); ctx.translate(camera.x, camera.y); ctx.scale(camera.zoom, camera.zoom);
+  for (const image of images) {
+    if (image.id === excludedId || !visible(image, camera, viewport)) continue;
+    if (image.generating) { if (includePending) paintPendingTile(ctx, image, palette, camera.zoom); }
+    else paintCanvasImage(ctx, image, palette, rasters);
+    if (!palette.foregroundFilenameIds.has(image.id)) paintCanvasImageFilename(ctx, image, palette, camera.zoom);
+  }
+  ctx.restore();
+}
+
+// One viewport-sized backing store, at most 32 MiB of RGBA pixels (GPU overhead is additional).
+const MAX_PIXELS = 8_388_608;
+const MAX_EDGE = 8192;
+type CacheKey = { images: CanvasImage[]; id: string; camera: Camera; viewport: Viewport; width: number; height: number; theme: string; label: string };
+export class CanvasIsolationCache {
+  private canvas: HTMLCanvasElement | null = null;
+  private key: CacheKey | null = null;
+  private unavailable = false;
+
+  get(images: CanvasImage[], id: string, camera: Camera, viewport: Viewport, dpr: number, theme: string, palette: CanvasPalette, rasters?: CanvasRasterCache) {
+    if (this.unavailable || viewport.width <= 0 || viewport.height <= 0) return null;
+    const scale = Math.min(dpr, 2, Math.sqrt(MAX_PIXELS / viewport.width / viewport.height), MAX_EDGE / viewport.width, MAX_EDGE / viewport.height);
+    const width = Math.max(1, Math.floor(viewport.width * scale)), height = Math.max(1, Math.floor(viewport.height * scale));
+    const key = this.key;
+    const label = [palette.loadingLabel, palette.coverLabel, palette.vectorLabel, palette.coverId, palette.filenameText, palette.filenameIcon?.src, [...palette.foregroundFilenameIds].join(',')].join('|');
+    if (key && key.images === images && key.id === id && key.camera.x === camera.x && key.camera.y === camera.y && key.camera.zoom === camera.zoom && key.viewport.width === viewport.width && key.viewport.height === viewport.height && key.width === width && key.height === height && key.theme === theme && key.label === label) return this.canvas;
+    try {
+      const canvas = this.canvas ??= document.createElement('canvas');
+      if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+      const ctx = canvas.getContext('2d');
+      if (!ctx || (typeof ctx.isContextLost === 'function' && ctx.isContextLost())) throw new Error('Isolation cache unavailable');
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, width, height);
+      ctx.setTransform(width / viewport.width, 0, 0, height / viewport.height, 0, 0);
+      paintCanvasScene(ctx, images, camera, viewport, palette, id, true, rasters);
+      this.key = { images, id, camera: { ...camera }, viewport: { ...viewport }, width, height, theme, label };
+      return canvas;
+    } catch {
+      this.dispose(); this.unavailable = true;
+      return null;
+    }
+  }
+
+  dispose() {
+    if (this.canvas) { this.canvas.width = 0; this.canvas.height = 0; }
+    this.canvas = null; this.key = null; this.unavailable = false;
+  }
+}

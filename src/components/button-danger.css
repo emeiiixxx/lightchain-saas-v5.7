@@ -1,0 +1,5 @@
+/* Beta Danger Button; shares the workbench's semantic states. */
+.lc-button.lc-button--danger { background: var(--status-danger); color: var(--text-on-brand-white); }
+.lc-button.lc-button--danger:hover:not(:disabled) { background: var(--status-danger); color: var(--text-on-brand-white); box-shadow: inset 0 0 0 999px var(--state-hover); }
+.lc-button.lc-button--danger:active:not(:disabled) { background: var(--status-danger); box-shadow: inset 0 0 0 999px var(--state-selected); }
+.lc-button.lc-button--danger:disabled { background: var(--state-default); color: var(--text-disabled); }

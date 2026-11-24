@@ -1,0 +1,52 @@
+/* 5.1 Beta Button / Text. Source: docs/button-text-source.json. */
+.lc-button.lc-button--text {
+  padding: var(--spacing-none);
+  gap: var(--spacing-xs);
+  border: 0;
+  border-radius: var(--radius-base);
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-link);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0;
+  opacity: 1;
+}
+
+.lc-button.lc-button--text.lc-button--s {
+  min-width: var(--height-2xl);
+  height: var(--height-2xl);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.lc-button.lc-button--text.lc-button--m {
+  min-width: var(--height-3xl);
+  height: var(--height-3xl);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.lc-button.lc-button--text.lc-button--l {
+  min-width: var(--height-4xl);
+  height: var(--height-4xl);
+  gap: var(--spacing-base);
+  border-radius: var(--radius-l);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.lc-button.lc-button--text:hover:not(:disabled) {
+  color: var(--text-link-hover);
+}
+
+.lc-button.lc-button--text:disabled {
+  color: var(--text-disabled);
+  opacity: .65;
+}
+
+/* Text buttons keep a transparent surface in every state. */
+.lc-button.lc-button--text:is(:hover, :active, :disabled) {
+  background: transparent;
+  box-shadow: none;
+}

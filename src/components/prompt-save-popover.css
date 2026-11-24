@@ -1,0 +1,36 @@
+/* Figma v5.7 152:8357. Shared by every quick-save entry point. */
+.prompt-save-popover.prompt-save-popover--designed {
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100dvh - 16px);
+  padding: var(--spacing-2xl);
+  gap: var(--spacing-2xl);
+  border: 0;
+  border-radius: var(--radius-xl);
+  box-shadow: inset 0 0 0 1px var(--border-weak), 0 6px 14px -2px var(--overlay-weak);
+  overflow: hidden;
+}
+.prompt-save-popover--designed > header,.prompt-save-popover--designed > footer { flex: none; }
+.prompt-save-popover--designed > header > h3 { flex: 1; min-width: 0; font-size: 16px; font-weight: 500; line-height: 24px; }
+.prompt-save-popover--designed > header .lc-button { width: 24px; min-width: 24px; height: 24px; padding: 0; border-radius: var(--radius-m); }
+.prompt-save-popover--designed .prompt-save-body { display: flex; flex: 0 1 auto; min-height: 0; flex-direction: column; gap: var(--spacing-2xl); overflow-y: auto; }
+.prompt-save-popover--designed .prompt-save-title-field { display: flex; flex: none; flex-direction: column; gap: var(--spacing-base); }
+.prompt-save-popover--designed .prompt-save-label,.prompt-save-popover--designed .prompt-category-label { display: flex; align-items: center; gap: var(--spacing-xs); color: var(--text-primary); font-size: 14px; font-weight: 400; line-height: 20px; }
+.prompt-save-popover--designed .prompt-name-input { height: var(--height-2xl); line-height: 16px; }
+.prompt-save-popover--designed .prompt-name-input > span { flex: none; }
+.prompt-save-popover--designed .prompt-category-options { align-items: flex-start; gap: var(--spacing-base); }
+/* Preserve this instance's 24px height and spacing on the shared Text Button. */
+.prompt-save-popover--designed .lc-button.lc-button--text.prompt-category-add { min-width: var(--height-xl); height: var(--height-xl); padding-inline: var(--spacing-base); border-radius: var(--radius-m); }
+/* Figma 152:12973: compact custom-category input and XS actions share one row. */
+.prompt-save-popover--designed .prompt-category-field .prompt-category-custom { flex-wrap: nowrap; justify-content: flex-start; gap: var(--spacing-base); }
+.prompt-save-popover--designed .prompt-category-field .prompt-category-name-input { flex: 1 1 0; min-width: 0; height: var(--height-xl); gap: var(--spacing-xs); padding-inline: var(--spacing-base); border: 0; border-radius: var(--radius-m); box-shadow: inset 0 0 0 1px var(--border-weak); }
+.prompt-save-popover--designed .prompt-category-field .prompt-category-name-input:focus-within { background: var(--control-fill-focus); box-shadow: inset 0 0 0 1px var(--brand-primary); }
+.prompt-save-popover--designed .prompt-category-field .prompt-category-name-input input { font-size: 12px; line-height: 16px; caret-color: var(--brand-primary); }
+.prompt-save-popover--designed .prompt-category-custom-actions { gap: var(--spacing-xs); }
+.prompt-save-popover--designed .prompt-cover-field { display: flex; flex: none; flex-direction: column; gap: var(--spacing-base); }
+.prompt-save-popover--designed .prompt-cover-label h3 { margin: 0; font-size: 14px; font-weight: 400; line-height: 20px; }
+.prompt-save-popover--designed .prompt-cover-label p,.prompt-save-popover--designed .prompt-cover-status { margin: 0; color: var(--text-tertiary); font-size: 12px; font-weight: 400; line-height: 16px; overflow-wrap: anywhere; }
+.prompt-save-popover--designed .prompt-cover-preview { width: 80px; height: 80px; border-radius: var(--radius-l); }
+.prompt-save-popover--designed .prompt-cover-actions { gap: var(--spacing-base); }
+.prompt-save-popover--designed .prompt-cover-actions .lc-button { width: 24px; min-width: 24px; height: 24px; padding: 0; border-radius: var(--radius-m); }
+.prompt-save-popover--designed > footer .lc-button { padding-inline: var(--spacing-2xl); }

@@ -1,0 +1,15 @@
+/node_modules
+dist/
+.DS_Store
+*.tsbuildinfo
+.env
+.env.*
+artifacts/
+docs/
+public/experiments/
+AGENTS.md
+detail-*.ts
+src/design-workbench/detail-*
+src/design-workbench/use*Workflow.ts
+src/design-workbench/components/Detail*.tsx
+tests/detail-*

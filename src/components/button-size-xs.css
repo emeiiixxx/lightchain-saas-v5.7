@@ -1,0 +1,12 @@
+/* Beta Button XS, Figma 152:13060 / 152:13061. */
+.lc-button.lc-button--xs {
+  min-width: var(--height-xl);
+  height: var(--height-xl);
+  padding: 0 var(--spacing-base);
+  gap: var(--spacing-xs);
+  border-radius: var(--radius-m);
+  font-size: 12px;
+  line-height: 20px;
+}
+.lc-button.lc-button--xs:is(.lc-button--primary, .lc-button--secondary) { border: 0; }
+.lc-button.lc-button--xs.lc-button--icon { width: var(--height-xl); padding: 0; }
