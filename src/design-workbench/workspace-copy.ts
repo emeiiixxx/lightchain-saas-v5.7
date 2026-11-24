@@ -29,6 +29,7 @@ export const workspaceCopy: Record<string, readonly [string, string]> = {
 '正在解析图案设计点': ['Analyzing pattern design features', '柄のデザイン特徴を解析中'],
 '识别元素、绘画语言、组织关系与配色特征': ['Identifying elements, visual style, composition and colors', '要素、描画スタイル、構成、配色の特徴を識別しています'],
 '自定义': ['Custom', 'カスタム'],
+'自定义预设': ['Custom preset', 'カスタムプリセット'],
 '请输入': ['Enter text', '入力してください'],
 '确定': ['Confirm', '確定'],
 '生成张数': ['Image count', '生成枚数'],

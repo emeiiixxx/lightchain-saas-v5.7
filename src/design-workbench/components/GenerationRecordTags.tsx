@@ -6,9 +6,12 @@ import { recordDisplayTags } from '../generation-record-display';
 export function GenerationRecordTags({ record, active = true, disabled = false }: { record: GenerationRecord; active?: boolean; disabled?: boolean }) {
   const { t, locale } = useLocale();
   const isCrop = record.title === '智能裁图';
+  // Custom crop records keep the selected W*H value in ratio, including saved history.
+  const isCustomCrop = isCrop && /^\d+\*\d+$/.test(record.ratio ?? '');
   const showCount = !isCrop && !record.textEdit && record.title !== '文字编辑';
   const duplicateCropSize = isCrop && !!record.ratio && record.resolution === `${record.ratio}px`;
-  const parameters = [record.ratio ? (record.ratio === 'auto' ? t('智能') : t(record.ratio)) : undefined,
+  const parameters = [isCustomCrop ? t('自定义预设') : undefined,
+    record.ratio ? (record.ratio === 'auto' ? t('智能') : t(record.ratio)) : undefined,
     duplicateCropSize ? undefined : record.resolution, showCount && record.count ? t(`${record.count}张`) : undefined].filter(Boolean);
   return <div className="generation-record-tags">
     {recordDisplayTags(record, locale).map((tag, index) => tag.image

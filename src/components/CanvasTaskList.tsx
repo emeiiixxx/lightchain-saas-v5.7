@@ -6,7 +6,6 @@ import { Icon } from './ui';
 import { usePresence } from '../usePresence';
 import { messages, type Locale } from '../i18n';
 import type { CropPreset } from '../crop-presets';
-import { commerceCropPlatformLabel } from '../commerce-crop-presets';
 
 export type CanvasTaskSource = { id: string; name: string; url: string; width: number; height: number };
 export type CanvasTask = {
@@ -52,9 +51,9 @@ function taskRows(tasks: CanvasTask[]): CanvasTaskRow[] {
 }
 const TASK_ROW_HEIGHT = 80;
 const copy = {
-  'zh-CN': { running: '生成中...', completed: '生成完成', failed: '生成失败', count: '进行中', focusResult: '聚焦到画布生成结果', crop: '裁剪', free: '自由' },
-  en: { running: 'Generating...', completed: 'Completed', failed: 'Failed', count: 'running', focusResult: 'Focus generated results on canvas', crop: 'Crop', free: 'Free' },
-  ja: { running: '生成中...', completed: '生成完了', failed: '生成失敗', count: '件実行中', focusResult: 'キャンバス上の生成結果に移動', crop: 'トリミング', free: '自由' },
+  'zh-CN': { running: '生成中...', completed: '生成完成', failed: '生成失败', count: '进行中', focusResult: '聚焦到画布生成结果' },
+  en: { running: 'Generating...', completed: 'Completed', failed: 'Failed', count: 'running', focusResult: 'Focus generated results on canvas' },
+  ja: { running: '生成中...', completed: '生成完了', failed: '生成失敗', count: '件実行中', focusResult: 'キャンバス上の生成結果に移動' },
 };
 const emptyTasks: CanvasTask[] = [];
 
@@ -102,10 +101,6 @@ export function CanvasTaskList({ tasks = emptyTasks, locale, onSelectTask, canSe
       {shown.value.map(task => {
         const createdAt = new Date(task.createdAt).toLocaleString('sv-SE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
         const file = task.resultFiles?.[0];
-        const cropLabel = task.crop ? task.crop.preset.kind === 'commerce' ? commerceCropPlatformLabel(task.crop.preset.label, locale)
-          : `${t.crop} · ${task.crop.preset.id === 'free' ? t.free : task.crop.preset.label}` : '';
-        const cropResolution = task.crop && !(task.crop.preset.id.startsWith('custom:') && task.crop.preset.label === `${task.crop.width}*${task.crop.height}`)
-          ? `${task.crop.width}*${task.crop.height}px` : '';
         const content = <>
           <span className="canvas-task-thumbnail">
             {task.status === 'running' ? <span className="canvas-task-generating" aria-hidden="true"><span className="canvas-task-gradient">
@@ -114,17 +109,16 @@ export function CanvasTaskList({ tasks = emptyTasks, locale, onSelectTask, canSe
               <span className="task-gradient-purple"><img src="/assets/canvas-task-list/generating-purple.svg" alt="" /></span>
             </span></span> : task.thumbnailUrl ? <ProgressiveImage src={task.thumbnailUrl} alt="" fit="contain" /> : null}
           </span>
-          <span className="canvas-task-details" style={cropResolution ? { gap: 0 } : undefined}>
+          <span className="canvas-task-details">
             {file && <span className="canvas-task-filename" onClick={event => event.stopPropagation()}>
               <EditableFilename name={file.name} onRename={task.status === 'completed' && onRenameFile && canRenameFile?.(file.id) ? name => onRenameFile(file.id, name) : undefined} />
             </span>}
-            <span className="canvas-task-status" title={cropLabel || undefined}>{cropLabel || t[task.status]}</span>
-            {cropResolution && <span className="canvas-task-status" title={cropResolution}>{cropResolution}</span>}
+            <span className="canvas-task-status">{t[task.status]}</span>
             <time dateTime={task.createdAt}>{createdAt}</time>
           </span>
         </>;
         return <div className="canvas-task-item" role="listitem" key={task.rowId}>
-          {selectable(task) ? <div role="button" tabIndex={0} className="canvas-task-row canvas-task-row--action" aria-label={`${file ? `${canvasMediaDisplayName(file.name)} · ` : ''}${cropLabel ? `${cropLabel} · ` : ''}${cropResolution ? `${cropResolution} · ` : ''}${t.completed} · ${createdAt} · ${t.focusResult}`}
+          {selectable(task) ? <div role="button" tabIndex={0} className="canvas-task-row canvas-task-row--action" aria-label={`${file ? `${canvasMediaDisplayName(file.name)} · ` : ''}${t.completed} · ${createdAt} · ${t.focusResult}`}
             onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectTask?.(task); } }} onClick={() => { if (selectable(task)) onSelectTask?.(task); }}>{content}</div> : <div className="canvas-task-row">{content}</div>}
         </div>;
       })}
