@@ -1,3 +1,4 @@
+import { imageDisplayPreview } from './bundled-assets';
 import type { PromptEntry } from './prompt-types';
 import type { Locale } from './i18n';
 import { MAX_CUSTOM_PROMPT_CATEGORIES, getCustomPromptCategoryCount, normalizePromptCategory, orderCustomPromptCategories, promptCategoryCopy, promptCategoryNameError, resolveCustomPromptCategory } from './prompt-categories';
@@ -302,7 +303,7 @@ function initializeRoleModelCovers(): Promise<void> {
     // Fetch and convert every cover before opening the write transaction. BASE_URL
     // is shared by the parent and workbench bundles, including GitHub Pages builds.
     const coverEntries = await Promise.all(roleModelCoverFiles.map(async ({ id, path }) =>
-      [id, await readPromptCoverDataUrl(`${import.meta.env.BASE_URL}${path}`)] as const));
+      [id, await readPromptCoverDataUrl(imageDisplayPreview(`${import.meta.env.BASE_URL}${path}`))] as const));
     const changed = await commitRoleModelCovers(new Map(coverEntries));
     coversInitialized = true;
     if (changed) notifyPromptLibraryChanged('role-model-covers-v1');

@@ -1,10 +1,11 @@
+import { iconAssetUrl } from '../../inline-icons';
 import { useLocale } from '../LocaleContext';
 import { isValidElement, type ButtonHTMLAttributes, type CSSProperties, type ReactNode, useLayoutEffect, useRef } from 'react';
 import '../../components/button-text.css';
 
 // Reuses the 5.3 component API and Beta semantic foregrounds. Artwork is exported from Figma.
 export function Icon({ name, size = 20, className = '' }: { name: string; size?: number; className?: string }) {
-  return <span aria-hidden="true" className={`icon ${className}`} style={{ width: size, height: size, '--icon-url': `url("/assets/design-workbench/${name}.svg")` } as CSSProperties} />;
+  return <span aria-hidden="true" className={`icon ${className}`} style={{ width: size, height: size, '--icon-url': `url("${iconAssetUrl(`/assets/design-workbench/${name}.svg`)}")` } as CSSProperties} />;
 }
 export function Button({ variant = 'ghost', size = 's', icon, children, className = '', title, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'ghost' | 'primary' | 'outline' | 'secondary' | 'tonal' | 'danger' | 'text'; size?: 's' | 'm' | 'l'; icon?: string }) {
   const iconOnly = (!children && !!icon) || (isValidElement(children) && children.type === Icon);

@@ -173,7 +173,7 @@ function PromptLibrary({phase,entries,maxLength,onStore,onApply,onClose}:{phase:
  </div></div></header>
  <nav id={listId}>{visible.map(entry=><div className="prompt-list-card" key={entry.id} data-selected={activeId===entry.id}>
  <button className="prompt-card-select" disabled={saving} aria-pressed={activeId===entry.id} onClick={()=>{setSelected(entry.id);if(entry.id!==draft?.id){categoryDrafts.reset();setDraft(null);}}}>
-   {entry.coverUrl&&<span className="prompt-list-cover"><img src={entry.coverUrl} alt=""/></span>}
+   {entry.coverUrl&&<span className="prompt-list-cover"><img src={entry.coverUrl} alt="" loading="lazy" decoding="async"/></span>}
    <span className="prompt-card-context"><strong>{entry.pinned&&<span className="prompt-pinned-tag">置顶</span>}<span className="prompt-card-title">{entry.name||'Untitled'}</span></strong><span className="prompt-card-description">{entry.content||'请输入提示词内容...'}</span></span>
  </button>
  {entries.some(e=>e.id===entry.id)&&<Button className="prompt-card-more" disabled={saving} aria-label={`更多 · ${entry.name||'Untitled'}`} title="更多" aria-haspopup="menu" aria-expanded={menu?.entry.id===entry.id} onClick={e=>setMenu(menu?.entry.id===entry.id?null:{entry,anchor:e.currentTarget})}><Icon name="promptMore" size={20}/></Button>}

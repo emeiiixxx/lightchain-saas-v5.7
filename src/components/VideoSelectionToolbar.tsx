@@ -1,3 +1,4 @@
+import { iconAssetUrl } from '../inline-icons';
 import { useId, type CSSProperties } from 'react';
 import { messages, type Locale } from '../i18n';
 import type { DownloadFormat } from '../download-image';
@@ -15,7 +16,7 @@ const copy = {
 type ToolbarIconName = 'material' | 'video' | 'chevron' | 'remake' | 'cutout' | 'upscale' | 'save-asset' | 'download' | 'send' | 'quick-edit' | 'multi-view' | 'storyboard-image' | 'grid-split' | 'fashion-video' | 'multi-reference' | 'storyboard-video';
 function ToolbarIcon({ name }: { name: ToolbarIconName }) {
   const size = name === 'upscale' ? 16 : 20;
-  return <span aria-hidden="true" className="icon" style={{ width: size, height: size, '--icon-url': `url("${import.meta.env.BASE_URL}assets/video-image-toolbar-20261023/${name}.svg")` } as CSSProperties} />;
+  return <span aria-hidden="true" className="icon" style={{ width: size, height: size, '--icon-url': `url("${iconAssetUrl(`${import.meta.env.BASE_URL}assets/video-image-toolbar-20261023/${name}.svg`)}")` } as CSSProperties} />;
 }
 
 export type VideoSelectionAction = 'cutout' | 'fashionVideo' | 'multiReference' | 'storyboard' | 'quickEdit' | 'multiView' | 'storyboardImage' | 'gridSplit' | 'videoRemake' | 'upscale' | 'saveAsset' | 'sendImage';

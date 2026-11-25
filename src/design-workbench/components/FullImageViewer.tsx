@@ -47,7 +47,7 @@ export function FullImageViewer({ image, locale, phase, onClose, images = [], se
       onSelect?.((selectedIndex + step + images.length) % images.length);
     }}>
     <FullImageStage key={`${selectedIndex}-${image.url}`} width={image.width * fit} height={image.height * fit} wheelFactor={wheelZoom.factor}>
-      {content ?? <ProgressiveImage className="full-image-content" src={image.url} alt={canvasMediaDisplayName(image.name)} eager fit="contain" />}
+      {content ?? <ProgressiveImage original className="full-image-content" src={image.url} alt={canvasMediaDisplayName(image.name)} eager fit="contain" />}
     </FullImageStage>
     {hasGallery && !details && <nav ref={thumbnails} className="full-image-thumbnails" aria-label={translate('图片缩略图')}>
       {images.map((item, index) => <button key={item.url} type="button" aria-label={`${t.viewFull} · ${canvasMediaDisplayName(item.name)}`} aria-current={index === selectedIndex ? 'true' : undefined} onClick={() => onSelect?.(index)}>

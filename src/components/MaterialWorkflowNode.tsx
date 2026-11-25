@@ -1,3 +1,4 @@
+import { iconAssetUrl } from '../inline-icons';
 import { canvasMediaDisplayName } from '../canvas-media-filename';
 import { useEffect, useId, useRef, type CSSProperties, type KeyboardEvent } from 'react';
 import type { Locale } from '../i18n';
@@ -65,7 +66,7 @@ type Props = {
 };
 
 function NodeIcon({ src, size = 16, className = '' }: { src: string; size?: number; className?: string }) {
-  return <span className={`icon video-node-icon ${className}`} aria-hidden="true" style={{ width: size, height: size, '--icon-url': `url("${src}")` } as CSSProperties} />;
+  return <span className={`icon video-node-icon ${className}`} aria-hidden="true" style={{ width: size, height: size, '--icon-url': `url("${iconAssetUrl(src)}")` } as CSSProperties} />;
 }
 
 function navigateChoices(event: KeyboardEvent<HTMLDivElement>, selectOnFocus = true) {

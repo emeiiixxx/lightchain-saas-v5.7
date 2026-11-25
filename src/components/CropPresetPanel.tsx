@@ -1,3 +1,4 @@
+import { iconAssetUrl } from '../inline-icons';
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { Locale } from '../i18n';
 import { Button } from './ui';
@@ -42,7 +43,7 @@ function PresetIcon({ name, size = 20 }: { name: string; size?: 16 | 20 }) {
   // Reuse the Beta library's portrait icon for 5:6, which has no dedicated variant.
   const iconName = name === 'ratio-5-6' ? 'ratio-4-5' : name;
   return <span aria-hidden="true" className="icon crop-preset-icon" style={{ width: size, height: size,
-    '--icon-url': `url("${import.meta.env.BASE_URL}assets/crop-presets-v57/${iconName}.svg")` } as CSSProperties} />;
+    '--icon-url': `url("${iconAssetUrl(`${import.meta.env.BASE_URL}assets/crop-presets-v57/${iconName}.svg`)}")` } as CSSProperties} />;
 }
 
 function ratioPreset(group: string, ratio: string): CropPreset {

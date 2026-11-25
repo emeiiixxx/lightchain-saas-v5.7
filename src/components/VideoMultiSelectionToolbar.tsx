@@ -1,3 +1,4 @@
+import { iconAssetUrl } from '../inline-icons';
 import type { CSSProperties } from 'react';
 import { messages, type Locale } from '../i18n';
 import type { VideoMultiSelection } from '../video-multi-selection';
@@ -12,7 +13,7 @@ const copy = {
 export type VideoMultiAction = 'quick' | 'storyboard' | 'professional';
 function MultiIcon({ name }: { name: VideoMultiAction | 'download' }) {
   return <span className="icon" aria-hidden="true" style={{ width: 20, height: 20,
-    '--icon-url': `url("${import.meta.env.BASE_URL}assets/video-multi-toolbar/${name}.svg")` } as CSSProperties} />;
+    '--icon-url': `url("${iconAssetUrl(`${import.meta.env.BASE_URL}assets/video-multi-toolbar/${name}.svg`)}")` } as CSSProperties} />;
 }
 
 export function VideoMultiSelectionToolbar({ locale, selection, downloading, onAction, onDownload }: {

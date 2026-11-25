@@ -1,10 +1,11 @@
+import { inlineIconAssets } from './inline-icons';
 const videoAssetBase = `${import.meta.env.BASE_URL}assets/video-workspace/`;
 const entryAssetBase = `${import.meta.env.BASE_URL}assets/video-entry-20261023/`;
 const materialAssetBase = `${import.meta.env.BASE_URL}assets/video-material-20261022/`;
 const contextAssetBase = `${import.meta.env.BASE_URL}assets/video-context-submenus-20261023/`;
 
 // Original artwork from Figma file 1dBgOC793NRsKgbNIaLZMK, node 64:2057.
-export const videoAssets = {
+export const videoAssets = inlineIconAssets({
   // Original slots in cascading canvas menus 159:27144 / 159:27378 / 159:27502.
   contextMaterial: `${contextAssetBase}material.svg`,
   contextVideo: `${contextAssetBase}video.svg`,
@@ -55,4 +56,4 @@ export const videoAssets = {
   landscapeVideo: `${videoAssetBase}brand-story.mp4`,
   // EmptyIcon / 暂无数据 (6:317), used by StateMessage 64:4668.
   empty: `${videoAssetBase}empty.png`,
-} as const;
+} as const);

@@ -1,3 +1,4 @@
+import { bundledImage } from './bundled-assets';
 import type { CanvasImage } from './canvas';
 import { canvasMediaFilename } from './canvas-media-filename';
 import { assetDisplayUrl } from './asset-display-url';
@@ -98,9 +99,14 @@ export const multiDemoAssets: LibraryImage[] = [
 ];
 
 export async function prepareMainImage(asset: LibraryImage): Promise<Omit<CanvasImage, 'x' | 'y'>> {
-  const image = new Image();
-  image.src = assetDisplayUrl(asset.url);
-  await image.decode();
-  const width = Math.min(360, image.naturalWidth);
-  return { id: crypto.randomUUID(), name: canvasMediaFilename(asset.name, asset.url), url: asset.url, width, height: width * image.naturalHeight / image.naturalWidth, naturalWidth: image.naturalWidth, naturalHeight: image.naturalHeight, role: 'main' };
+  const bundled = bundledImage(asset.url);
+  let naturalWidth = bundled?.width, naturalHeight = bundled?.height;
+  if (!naturalWidth || !naturalHeight) {
+    const image = new Image();
+    image.src = assetDisplayUrl(asset.url);
+    await image.decode();
+    naturalWidth = image.naturalWidth; naturalHeight = image.naturalHeight;
+  }
+  const width = Math.min(360, naturalWidth);
+  return { id: crypto.randomUUID(), name: canvasMediaFilename(asset.name, asset.url), url: asset.url, width, height: width * naturalHeight / naturalWidth, naturalWidth, naturalHeight, role: 'main' };
 }

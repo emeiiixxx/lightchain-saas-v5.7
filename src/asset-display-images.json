@@ -1,0 +1,1010 @@
+{
+  "assets/design-workbench/agent-chat-20261028/reference-1.jpg": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/0611355f5548cb231b75-320.webp",
+    "960": "assets/display-previews/0611355f5548cb231b75-960.webp"
+  },
+  "assets/design-workbench/agent-chat-20261028/reference-2.jpg": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/e656670f648e4d04ad55-320.webp",
+    "960": "assets/display-previews/e656670f648e4d04ad55-960.webp"
+  },
+  "assets/design-workbench/agent-chat-20261028/result.jpg": {
+    "width": 1696,
+    "height": 2528,
+    "320": "assets/display-previews/6b59aecd7c26a201fc63-320.webp",
+    "960": "assets/display-previews/6b59aecd7c26a201fc63-960.webp"
+  },
+  "assets/design-workbench/color-change-result.png": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/e656670f648e4d04ad55-320.webp",
+    "960": "assets/display-previews/e656670f648e4d04ad55-960.webp"
+  },
+  "assets/design-workbench/color-change-source.png": {
+    "width": 932,
+    "height": 1400,
+    "320": "assets/display-previews/01a30bcdfe6e6c3fbb93-320.webp",
+    "960": "assets/display-previews/01a30bcdfe6e6c3fbb93-960.webp"
+  },
+  "assets/design-workbench/fabric.png": {
+    "width": 564,
+    "height": 846,
+    "320": "assets/display-previews/2d1d1c74f68335f0d425-320.webp",
+    "960": "assets/display-previews/2d1d1c74f68335f0d425-960.webp"
+  },
+  "assets/design-workbench/garment.jpg": {
+    "width": 1792,
+    "height": 2400,
+    "320": "assets/display-previews/e798ef89439e701b41e7-320.webp",
+    "960": "assets/display-previews/e798ef89439e701b41e7-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgAsset.png": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/8baf66dc2a8a67e51bc5-320.webp",
+    "960": "assets/display-previews/8baf66dc2a8a67e51bc5-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgAsset1.png": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/d4be3aff15b93730b593-320.webp",
+    "960": "assets/display-previews/d4be3aff15b93730b593-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgAsset2.png": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/b3091dd023ee85b775df-320.webp",
+    "960": "assets/display-previews/b3091dd023ee85b775df-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgAsset3.png": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/30b8c58eb40f502b1ee9-320.webp",
+    "960": "assets/display-previews/30b8c58eb40f502b1ee9-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgAsset4.jpg": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/0611355f5548cb231b75-320.webp",
+    "960": "assets/display-previews/0611355f5548cb231b75-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgAsset5.jpg": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/e656670f648e4d04ad55-320.webp",
+    "960": "assets/display-previews/e656670f648e4d04ad55-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgAsset6.jpg": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/7c39cf70ff57b66c7487-320.webp",
+    "960": "assets/display-previews/7c39cf70ff57b66c7487-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgImageAsset.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/0e94af43869f01c8a1e9-320.webp",
+    "960": "assets/display-previews/0e94af43869f01c8a1e9-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgImageAsset1.jpg": {
+    "width": 932,
+    "height": 1400,
+    "320": "assets/display-previews/01a30bcdfe6e6c3fbb93-320.webp",
+    "960": "assets/display-previews/01a30bcdfe6e6c3fbb93-960.webp"
+  },
+  "assets/design-workbench/generation-record-imgImageAsset2.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/439e9f4fefa83228550d-320.webp",
+    "960": "assets/display-previews/439e9f4fefa83228550d-960.webp"
+  },
+  "assets/design-workbench/imgImageFill.png": {
+    "width": 1024,
+    "height": 1024,
+    "320": "assets/display-previews/cd38a2a6bb058280c4d3-320.webp",
+    "960": "assets/display-previews/cd38a2a6bb058280c4d3-960.webp"
+  },
+  "assets/design-workbench/pattern.png": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/3647c877f946063b1cc6-320.webp",
+    "960": "assets/display-previews/3647c877f946063b1cc6-960.webp"
+  },
+  "assets/design-workbench/print-demo-garment.png": {
+    "width": 2020,
+    "height": 2020,
+    "320": "assets/display-previews/4ee5c5301150d8d9d3a1-320.webp",
+    "960": "assets/display-previews/4ee5c5301150d8d9d3a1-960.webp"
+  },
+  "assets/design-workbench/print-demo-mask.png": {
+    "width": 1280,
+    "height": 1280,
+    "320": "assets/display-previews/3c572478cba8132d52cf-320.webp",
+    "960": "assets/display-previews/3c572478cba8132d52cf-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/fabric-sage.jpg": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/f06bf6c7ed7b815ded36-320.webp",
+    "960": "assets/display-previews/f06bf6c7ed7b815ded36-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/fabric-source.jpg": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/c6ab2d3d2985a822fef6-320.webp",
+    "960": "assets/display-previews/c6ab2d3d2985a822fef6-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-back.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/26e00636880d93871604-320.webp",
+    "960": "assets/display-previews/26e00636880d93871604-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-blue.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/c9dcc70f26cba9cdf9d3-320.webp",
+    "960": "assets/display-previews/c9dcc70f26cba9cdf9d3-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-city.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/f64a1ccb25d950f9e911-320.webp",
+    "960": "assets/display-previews/f64a1ccb25d950f9e911-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-coast.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/607dcaa76c5833aff674-320.webp",
+    "960": "assets/display-previews/607dcaa76c5833aff674-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-creative.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/5fc5b906c12f387a45ba-320.webp",
+    "960": "assets/display-previews/5fc5b906c12f387a45ba-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-crop.jpg": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/2742d4bc9c1eb64911b4-320.webp",
+    "960": "assets/display-previews/2742d4bc9c1eb64911b4-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-cutout.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/2c366bfbce1d176b54cd-320.webp",
+    "960": "assets/display-previews/2c366bfbce1d176b54cd-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-erase.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/1f44a5eb54a07da666df-320.webp",
+    "960": "assets/display-previews/1f44a5eb54a07da666df-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-flat.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/92346695836c9d9490b1-320.webp",
+    "960": "assets/display-previews/92346695836c9d9490b1-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-local.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/c72e7f5eaa40e7a969a2-320.webp",
+    "960": "assets/display-previews/c72e7f5eaa40e7a969a2-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-outpaint.jpg": {
+    "width": 1536,
+    "height": 1024,
+    "320": "assets/display-previews/4279c89b92ed0455c079-320.webp",
+    "960": "assets/display-previews/4279c89b92ed0455c079-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-print.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/04cc8c912e1addd2845f-320.webp",
+    "960": "assets/display-previews/04cc8c912e1addd2845f-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-quick.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/33ba01ca8c3a56ba2636-320.webp",
+    "960": "assets/display-previews/33ba01ca8c3a56ba2636-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-rose.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/2953e92f7a54a6546acb-320.webp",
+    "960": "assets/display-previews/2953e92f7a54a6546acb-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-sage.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/db4d2ddbf58daf3e5ab4-320.webp",
+    "960": "assets/display-previews/db4d2ddbf58daf3e5ab4-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-sketch.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/9177916bf0d1bcaf259b-320.webp",
+    "960": "assets/display-previews/9177916bf0d1bcaf259b-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-stripe.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/a45297d85a4df88f6322-320.webp",
+    "960": "assets/display-previews/a45297d85a4df88f6322-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/kol-tryon.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/1db205e1c09c0c4f053c-320.webp",
+    "960": "assets/display-previews/1db205e1c09c0c4f053c-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/mask-bag.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/64d9336846c384dac3ee-320.webp",
+    "960": "assets/display-previews/64d9336846c384dac3ee-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/mask-dress.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8e7d51b15593ba14a883-320.webp",
+    "960": "assets/display-previews/8e7d51b15593ba14a883-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/mask-person.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/962f1e1bbd0ee94939f2-320.webp",
+    "960": "assets/display-previews/962f1e1bbd0ee94939f2-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/print-designed.jpg": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/ffac31d686eef214af61-320.webp",
+    "960": "assets/display-previews/ffac31d686eef214af61-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/print-repeat.jpg": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/34cc669a37740d7c1df9-320.webp",
+    "960": "assets/display-previews/34cc669a37740d7c1df9-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/print-source.jpg": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/fbb52b7bde4dfeb2936d-320.webp",
+    "960": "assets/display-previews/fbb52b7bde4dfeb2936d-960.webp"
+  },
+  "assets/design-workbench/promo-tasks/print-woodblock.jpg": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/0a136de033dc355b543d-320.webp",
+    "960": "assets/display-previews/0a136de033dc355b543d-960.webp"
+  },
+  "assets/design-workbench/prompt-library-empty.png": {
+    "width": 384,
+    "height": 384,
+    "320": "assets/display-previews/490531e003051b39753b-320.webp",
+    "960": "assets/display-previews/490531e003051b39753b-960.webp"
+  },
+  "assets/design-workbench/properties-empty-selection.png": {
+    "width": 384,
+    "height": 384,
+    "320": "assets/display-previews/4884a485c34165dc52f8-320.webp",
+    "960": "assets/display-previews/4884a485c34165dc52f8-960.webp"
+  },
+  "assets/design-workbench/sketch.png": {
+    "width": 561,
+    "height": 928,
+    "320": "assets/display-previews/a48e4f54d8fa996aed57-320.webp",
+    "960": "assets/display-previews/a48e4f54d8fa996aed57-960.webp"
+  },
+  "assets/design-workbench/task-failure/glass.png": {
+    "width": 1024,
+    "height": 1024,
+    "320": "assets/display-previews/e9d1c570655b6544a21a-320.webp",
+    "960": "assets/display-previews/e9d1c570655b6544a21a-960.webp"
+  },
+  "assets/design-workbench/task-record-empty.png": {
+    "width": 384,
+    "height": 384,
+    "320": "assets/display-previews/960ae94c60116850213a-320.webp",
+    "960": "assets/display-previews/960ae94c60116850213a-960.webp"
+  },
+  "assets/design-workbench/text-edit/guide-1-correct.png": {
+    "width": 836,
+    "height": 652,
+    "320": "assets/display-previews/bb832a9423b6aca34a99-320.webp",
+    "960": "assets/display-previews/bb832a9423b6aca34a99-960.webp"
+  },
+  "assets/design-workbench/text-edit/guide-1-wrong.png": {
+    "width": 836,
+    "height": 652,
+    "320": "assets/display-previews/4ce8cfea7432c8e485af-320.webp",
+    "960": "assets/display-previews/4ce8cfea7432c8e485af-960.webp"
+  },
+  "assets/design-workbench/text-edit/guide-2-correct.png": {
+    "width": 836,
+    "height": 652,
+    "320": "assets/display-previews/f44e11198541a5536dab-320.webp",
+    "960": "assets/display-previews/f44e11198541a5536dab-960.webp"
+  },
+  "assets/design-workbench/text-edit/guide-2-wrong.png": {
+    "width": 836,
+    "height": 652,
+    "320": "assets/display-previews/a07b9823bc228deaf432-320.webp",
+    "960": "assets/display-previews/a07b9823bc228deaf432-960.webp"
+  },
+  "assets/design-workbench/text-edit/guide-3-correct.png": {
+    "width": 836,
+    "height": 652,
+    "320": "assets/display-previews/9f708a582c07034e14a8-320.webp",
+    "960": "assets/display-previews/9f708a582c07034e14a8-960.webp"
+  },
+  "assets/design-workbench/text-edit/guide-3-wrong.png": {
+    "width": 836,
+    "height": 652,
+    "320": "assets/display-previews/bd8f6d929a1e22699915-320.webp",
+    "960": "assets/display-previews/bd8f6d929a1e22699915-960.webp"
+  },
+  "assets/design-workbench/text-edit/tech-pack.png": {
+    "width": 1089,
+    "height": 1444,
+    "320": "assets/display-previews/e94018d2befe01b70dba-320.webp",
+    "960": "assets/display-previews/e94018d2befe01b70dba-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset.png": {
+    "width": 1200,
+    "height": 2130,
+    "320": "assets/display-previews/5344e0a010c2bc04af16-320.webp",
+    "960": "assets/display-previews/5344e0a010c2bc04af16-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset1.png": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/70583df957a3bb64027a-320.webp",
+    "960": "assets/display-previews/70583df957a3bb64027a-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset10.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/e6d616cd87551357ff92-320.webp",
+    "960": "assets/display-previews/e6d616cd87551357ff92-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset11.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/f240246a46da052f573a-320.webp",
+    "960": "assets/display-previews/f240246a46da052f573a-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset12.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/95c01aa23854b9355fa4-320.webp",
+    "960": "assets/display-previews/95c01aa23854b9355fa4-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset13.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/45026ad464408bd4928e-320.webp",
+    "960": "assets/display-previews/45026ad464408bd4928e-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset14.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/0dcbf0cbef0123579c15-320.webp",
+    "960": "assets/display-previews/0dcbf0cbef0123579c15-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset15.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/0f38265529907af2c520-320.webp",
+    "960": "assets/display-previews/0f38265529907af2c520-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset16.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/1e139608e046e10269f6-320.webp",
+    "960": "assets/display-previews/1e139608e046e10269f6-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset2.png": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/f64006e1c59bec9bd663-320.webp",
+    "960": "assets/display-previews/f64006e1c59bec9bd663-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset3.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8dba02976f660e6fcde0-320.webp",
+    "960": "assets/display-previews/8dba02976f660e6fcde0-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset4.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/428712cab0f9c086565f-320.webp",
+    "960": "assets/display-previews/428712cab0f9c086565f-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset5.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/439e9f4fefa83228550d-320.webp",
+    "960": "assets/display-previews/439e9f4fefa83228550d-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset6.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/e122c03a85bcc41df9d3-320.webp",
+    "960": "assets/display-previews/e122c03a85bcc41df9d3-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset7.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/2aa057c8d2970c6cc16e-320.webp",
+    "960": "assets/display-previews/2aa057c8d2970c6cc16e-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset8.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/3fc0b7758e82a105598f-320.webp",
+    "960": "assets/display-previews/3fc0b7758e82a105598f-960.webp"
+  },
+  "assets/design-workbench/upload/imgAsset9.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8b938fb8fe0f597c4b3f-320.webp",
+    "960": "assets/display-previews/8b938fb8fe0f597c4b3f-960.webp"
+  },
+  "assets/design-workbench/upload/single-select-asset.png": {
+    "width": 735,
+    "height": 915,
+    "320": "assets/display-previews/6ca557662f26b965718a-320.webp",
+    "960": "assets/display-previews/6ca557662f26b965718a-960.webp"
+  },
+  "assets/design-workbench/workspace-bg.png": {
+    "width": 576,
+    "height": 1024,
+    "320": "assets/display-previews/e2f3875397a1e58d774c-320.webp",
+    "960": "assets/display-previews/e2f3875397a1e58d774c-960.webp"
+  },
+  "assets/grid-crop-example/source.webp": {
+    "width": 3072,
+    "height": 5504,
+    "320": "assets/display-previews/140b8d23964f1a7a7e6a-320.webp",
+    "960": "assets/display-previews/140b8d23964f1a7a7e6a-960.webp"
+  },
+  "assets/img.png": {
+    "width": 574,
+    "height": 1024,
+    "320": "assets/display-previews/99452605ac48be4c6013-320.webp",
+    "960": "assets/display-previews/99452605ac48be4c6013-960.webp"
+  },
+  "assets/imgImageFill.png": {
+    "width": 1024,
+    "height": 1024,
+    "320": "assets/display-previews/cd38a2a6bb058280c4d3-320.webp",
+    "960": "assets/display-previews/cd38a2a6bb058280c4d3-960.webp"
+  },
+  "assets/print-variation/botanical-variation-01.png": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/28932ee04341e29eaff7-320.webp",
+    "960": "assets/display-previews/28932ee04341e29eaff7-960.webp"
+  },
+  "assets/print-variation/botanical-variation-02.png": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/eae3adc8bf410b699d70-320.webp",
+    "960": "assets/display-previews/eae3adc8bf410b699d70-960.webp"
+  },
+  "assets/print-variation/botanical-variation-03.png": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/85b52b077720aef68669-320.webp",
+    "960": "assets/display-previews/85b52b077720aef68669-960.webp"
+  },
+  "assets/print-variation/botanical-variation-04.png": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/a7b34249813b95024ace-320.webp",
+    "960": "assets/display-previews/a7b34249813b95024ace-960.webp"
+  },
+  "assets/prompt-role-covers-v57/asian-female.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/e7fc4010cdc48a59bae8-320.webp",
+    "960": "assets/display-previews/e7fc4010cdc48a59bae8-960.webp"
+  },
+  "assets/prompt-role-covers-v57/asian-male.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/6d4d5cc94a0799085bce-320.webp",
+    "960": "assets/display-previews/6d4d5cc94a0799085bce-960.webp"
+  },
+  "assets/prompt-role-covers-v57/black-female.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/867fb059906fb2861166-320.webp",
+    "960": "assets/display-previews/867fb059906fb2861166-960.webp"
+  },
+  "assets/prompt-role-covers-v57/black-male.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/14a98b96094ccf23637b-320.webp",
+    "960": "assets/display-previews/14a98b96094ccf23637b-960.webp"
+  },
+  "assets/prompt-role-covers-v57/latina-female.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8930fb93f9dcf2b63a1b-320.webp",
+    "960": "assets/display-previews/8930fb93f9dcf2b63a1b-960.webp"
+  },
+  "assets/prompt-role-covers-v57/latino-male.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/40f985e2e5359f6cedf9-320.webp",
+    "960": "assets/display-previews/40f985e2e5359f6cedf9-960.webp"
+  },
+  "assets/prompt-role-covers-v57/white-female.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/98e142cd32109c4ceed7-320.webp",
+    "960": "assets/display-previews/98e142cd32109c4ceed7-960.webp"
+  },
+  "assets/prompt-role-covers-v57/white-male.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/af9467fc375841f5702e-320.webp",
+    "960": "assets/display-previews/af9467fc375841f5702e-960.webp"
+  },
+  "assets/storyboard-example/result.webp": {
+    "width": 3072,
+    "height": 5504,
+    "320": "assets/display-previews/ffe12f7a06505a5a8f58-320.webp",
+    "960": "assets/display-previews/ffe12f7a06505a5a8f58-960.webp"
+  },
+  "assets/try-on/background-example.png": {
+    "width": 216,
+    "height": 288,
+    "320": "assets/display-previews/91069a46375c6452308b-320.webp",
+    "960": "assets/display-previews/91069a46375c6452308b-960.webp"
+  },
+  "assets/try-on/empty-model.png": {
+    "width": 384,
+    "height": 384,
+    "320": "assets/display-previews/41033ae24a464de3b1ea-320.webp",
+    "960": "assets/display-previews/41033ae24a464de3b1ea-960.webp"
+  },
+  "assets/try-on/history/garment.png": {
+    "width": 1773,
+    "height": 2364,
+    "320": "assets/display-previews/0ad308faf8fbbe6f9eaa-320.webp",
+    "960": "assets/display-previews/0ad308faf8fbbe6f9eaa-960.webp"
+  },
+  "assets/try-on/history/landscape.png": {
+    "width": 2730,
+    "height": 1535,
+    "320": "assets/display-previews/1f94705b26b43b63c602-320.webp",
+    "960": "assets/display-previews/1f94705b26b43b63c602-960.webp"
+  },
+  "assets/try-on/history/lingerie-purple.png": {
+    "width": 793,
+    "height": 1062,
+    "320": "assets/display-previews/febc84f94c09d9215951-320.webp",
+    "960": "assets/display-previews/febc84f94c09d9215951-960.webp"
+  },
+  "assets/try-on/history/lingerie-yellow.png": {
+    "width": 794,
+    "height": 1064,
+    "320": "assets/display-previews/888bfb532d0b6ce933e3-320.webp",
+    "960": "assets/display-previews/888bfb532d0b6ce933e3-960.webp"
+  },
+  "assets/try-on/history/model.png": {
+    "width": 1728,
+    "height": 2304,
+    "320": "assets/display-previews/c66123d33cd4018f3a20-320.webp",
+    "960": "assets/display-previews/c66123d33cd4018f3a20-960.webp"
+  },
+  "assets/try-on/history/reference.png": {
+    "width": 2048,
+    "height": 2048,
+    "320": "assets/display-previews/d950384e6ca362d78314-320.webp",
+    "960": "assets/display-previews/d950384e6ca362d78314-960.webp"
+  },
+  "assets/try-on/history/regular-1.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8b938fb8fe0f597c4b3f-320.webp",
+    "960": "assets/display-previews/8b938fb8fe0f597c4b3f-960.webp"
+  },
+  "assets/try-on/history/regular-2.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/e6d616cd87551357ff92-320.webp",
+    "960": "assets/display-previews/e6d616cd87551357ff92-960.webp"
+  },
+  "assets/try-on/history/regular-3.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/f240246a46da052f573a-320.webp",
+    "960": "assets/display-previews/f240246a46da052f573a-960.webp"
+  },
+  "assets/try-on/history/regular-4.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/2aa057c8d2970c6cc16e-320.webp",
+    "960": "assets/display-previews/2aa057c8d2970c6cc16e-960.webp"
+  },
+  "assets/try-on/history/regular-5.png": {
+    "width": 2048,
+    "height": 2048,
+    "320": "assets/display-previews/305c055b796d4dc486bb-320.webp",
+    "960": "assets/display-previews/305c055b796d4dc486bb-960.webp"
+  },
+  "assets/try-on/history/single-garment.png": {
+    "width": 2048,
+    "height": 2048,
+    "320": "assets/display-previews/95d7c94c0cefe34b0647-320.webp",
+    "960": "assets/display-previews/95d7c94c0cefe34b0647-960.webp"
+  },
+  "assets/try-on/model-example.png": {
+    "width": 216,
+    "height": 288,
+    "320": "assets/display-previews/32c6f69a1bbf005256dd-320.webp",
+    "960": "assets/display-previews/32c6f69a1bbf005256dd-960.webp"
+  },
+  "assets/upload/imgAsset.png": {
+    "width": 1200,
+    "height": 2130,
+    "320": "assets/display-previews/5344e0a010c2bc04af16-320.webp",
+    "960": "assets/display-previews/5344e0a010c2bc04af16-960.webp"
+  },
+  "assets/upload/imgAsset1.png": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/70583df957a3bb64027a-320.webp",
+    "960": "assets/display-previews/70583df957a3bb64027a-960.webp"
+  },
+  "assets/upload/imgAsset10.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/e6d616cd87551357ff92-320.webp",
+    "960": "assets/display-previews/e6d616cd87551357ff92-960.webp"
+  },
+  "assets/upload/imgAsset11.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/f240246a46da052f573a-320.webp",
+    "960": "assets/display-previews/f240246a46da052f573a-960.webp"
+  },
+  "assets/upload/imgAsset12.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/95c01aa23854b9355fa4-320.webp",
+    "960": "assets/display-previews/95c01aa23854b9355fa4-960.webp"
+  },
+  "assets/upload/imgAsset13.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/45026ad464408bd4928e-320.webp",
+    "960": "assets/display-previews/45026ad464408bd4928e-960.webp"
+  },
+  "assets/upload/imgAsset14.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/0dcbf0cbef0123579c15-320.webp",
+    "960": "assets/display-previews/0dcbf0cbef0123579c15-960.webp"
+  },
+  "assets/upload/imgAsset15.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/0f38265529907af2c520-320.webp",
+    "960": "assets/display-previews/0f38265529907af2c520-960.webp"
+  },
+  "assets/upload/imgAsset16.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/1e139608e046e10269f6-320.webp",
+    "960": "assets/display-previews/1e139608e046e10269f6-960.webp"
+  },
+  "assets/upload/imgAsset2.png": {
+    "width": 1254,
+    "height": 1254,
+    "320": "assets/display-previews/f64006e1c59bec9bd663-320.webp",
+    "960": "assets/display-previews/f64006e1c59bec9bd663-960.webp"
+  },
+  "assets/upload/imgAsset3.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8dba02976f660e6fcde0-320.webp",
+    "960": "assets/display-previews/8dba02976f660e6fcde0-960.webp"
+  },
+  "assets/upload/imgAsset4.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/428712cab0f9c086565f-320.webp",
+    "960": "assets/display-previews/428712cab0f9c086565f-960.webp"
+  },
+  "assets/upload/imgAsset5.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/439e9f4fefa83228550d-320.webp",
+    "960": "assets/display-previews/439e9f4fefa83228550d-960.webp"
+  },
+  "assets/upload/imgAsset6.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/e122c03a85bcc41df9d3-320.webp",
+    "960": "assets/display-previews/e122c03a85bcc41df9d3-960.webp"
+  },
+  "assets/upload/imgAsset7.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/2aa057c8d2970c6cc16e-320.webp",
+    "960": "assets/display-previews/2aa057c8d2970c6cc16e-960.webp"
+  },
+  "assets/upload/imgAsset8.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/3fc0b7758e82a105598f-320.webp",
+    "960": "assets/display-previews/3fc0b7758e82a105598f-960.webp"
+  },
+  "assets/upload/imgAsset9.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8b938fb8fe0f597c4b3f-320.webp",
+    "960": "assets/display-previews/8b938fb8fe0f597c4b3f-960.webp"
+  },
+  "assets/upload/single-select-asset.png": {
+    "width": 735,
+    "height": 915,
+    "320": "assets/display-previews/6ca557662f26b965718a-320.webp",
+    "960": "assets/display-previews/6ca557662f26b965718a-960.webp"
+  },
+  "assets/video-template-20261023/brand-model.png": {
+    "width": 384,
+    "height": 652,
+    "320": "assets/display-previews/10bda563d3025a208a71-320.webp",
+    "960": "assets/display-previews/10bda563d3025a208a71-960.webp"
+  },
+  "assets/video-template-20261023/brand-subject.png": {
+    "width": 1536,
+    "height": 2752,
+    "320": "assets/display-previews/ddfed644187bfc3c7478-320.webp",
+    "960": "assets/display-previews/ddfed644187bfc3c7478-960.webp"
+  },
+  "assets/video-template-20261023/model-preview.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/e6d616cd87551357ff92-320.webp",
+    "960": "assets/display-previews/e6d616cd87551357ff92-960.webp"
+  },
+  "assets/video-template-20261023/model-thumbnail.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/e6d616cd87551357ff92-320.webp",
+    "960": "assets/display-previews/e6d616cd87551357ff92-960.webp"
+  },
+  "assets/video-template-20261023/subject-back.png": {
+    "width": 1383,
+    "height": 1383,
+    "320": "assets/display-previews/e656670f648e4d04ad55-320.webp",
+    "960": "assets/display-previews/e656670f648e4d04ad55-960.webp"
+  },
+  "assets/video-template-20261023/subject-front.jpg": {
+    "width": 932,
+    "height": 1400,
+    "320": "assets/display-previews/01a30bcdfe6e6c3fbb93-320.webp",
+    "960": "assets/display-previews/01a30bcdfe6e6c3fbb93-960.webp"
+  },
+  "assets/video-template-20261023/subject-thumbnail.png": {
+    "width": 932,
+    "height": 1400,
+    "320": "assets/display-previews/01a30bcdfe6e6c3fbb93-320.webp",
+    "960": "assets/display-previews/01a30bcdfe6e6c3fbb93-960.webp"
+  },
+  "assets/video-template-creator/reference.jpg": {
+    "width": 657,
+    "height": 1079,
+    "320": "assets/display-previews/19eed31f62ef273af13b-320.webp",
+    "960": "assets/display-previews/19eed31f62ef273af13b-960.webp"
+  },
+  "assets/video-workspace/ecommerce-poster-20261021-213138.png": {
+    "width": 1176,
+    "height": 1756,
+    "320": "assets/display-previews/ec766481e1b96a01ca7b-320.webp",
+    "960": "assets/display-previews/ec766481e1b96a01ca7b-960.webp"
+  },
+  "assets/video-workspace/empty.png": {
+    "width": 384,
+    "height": 384,
+    "320": "assets/display-previews/2c7e97c52ba2c761b37e-320.webp",
+    "960": "assets/display-previews/2c7e97c52ba2c761b37e-960.webp"
+  },
+  "assets/video-workspace/landscapePoster.png": {
+    "width": 645,
+    "height": 359,
+    "320": "assets/display-previews/0b709aa13e472c1acbd5-320.webp",
+    "960": "assets/display-previews/0b709aa13e472c1acbd5-960.webp"
+  },
+  "assets/video-workspace/workspacePlate.png": {
+    "width": 574,
+    "height": 1024,
+    "320": "assets/display-previews/9657156b7e35376278f6-320.webp",
+    "960": "assets/display-previews/9657156b7e35376278f6-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/garment-01.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8b08ced6baef0c835f65-320.webp",
+    "960": "assets/display-previews/8b08ced6baef0c835f65-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/garment-02.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/f594f643171a18ac6003-320.webp",
+    "960": "assets/display-previews/f594f643171a18ac6003-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/garment-03.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/52faf77514731740bace-320.webp",
+    "960": "assets/display-previews/52faf77514731740bace-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/garment-04.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/a507ac0f9fda7c07fb9f-320.webp",
+    "960": "assets/display-previews/a507ac0f9fda7c07fb9f-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/garment-05.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/87cb0bef823646486c58-320.webp",
+    "960": "assets/display-previews/87cb0bef823646486c58-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/model.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/cb6f5810cf3d9f959936-320.webp",
+    "960": "assets/display-previews/cb6f5810cf3d9f959936-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/result-01.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/41f01539a79411304059-320.webp",
+    "960": "assets/display-previews/41f01539a79411304059-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/result-02.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/142f48082503f8c6042a-320.webp",
+    "960": "assets/display-previews/142f48082503f8c6042a-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/result-03.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/f8121aff6c1ff4d2be71-320.webp",
+    "960": "assets/display-previews/f8121aff6c1ff4d2be71-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/result-04.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/d2f15fde1895047d9cde-320.webp",
+    "960": "assets/display-previews/d2f15fde1895047d9cde-960.webp"
+  },
+  "assets/workflow-examples/batch-try-on/result-05.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/739b7d40537dc304edd8-320.webp",
+    "960": "assets/display-previews/739b7d40537dc304edd8-960.webp"
+  },
+  "assets/workflow-examples/directed-neckline-main.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/45026ad464408bd4928e-320.webp",
+    "960": "assets/display-previews/45026ad464408bd4928e-960.webp"
+  },
+  "assets/workflow-examples/directed-neckline-mask.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/258ad8d8e9bfa5c75ef7-320.webp",
+    "960": "assets/display-previews/258ad8d8e9bfa5c75ef7-960.webp"
+  },
+  "assets/workflow-examples/directed-neckline-reference-mask-teal.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8112872478c65b3216f2-320.webp",
+    "960": "assets/display-previews/8112872478c65b3216f2-960.webp"
+  },
+  "assets/workflow-examples/directed-neckline-reference.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/8b938fb8fe0f597c4b3f-320.webp",
+    "960": "assets/display-previews/8b938fb8fe0f597c4b3f-960.webp"
+  },
+  "assets/workflow-examples/directed-neckline-result.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/741c9642f8be590bf9ba-320.webp",
+    "960": "assets/display-previews/741c9642f8be590bf9ba-960.webp"
+  },
+  "assets/workflow-examples/directed-reference.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/b170818ebb3ae675f9d3-320.webp",
+    "960": "assets/display-previews/b170818ebb3ae675f9d3-960.webp"
+  },
+  "assets/workflow-examples/directed-result.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/eecde05bd67705c1001a-320.webp",
+    "960": "assets/display-previews/eecde05bd67705c1001a-960.webp"
+  },
+  "assets/workflow-examples/flat-blue-stripe-main.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/0dcbf0cbef0123579c15-320.webp",
+    "960": "assets/display-previews/0dcbf0cbef0123579c15-960.webp"
+  },
+  "assets/workflow-examples/flat-blue-stripe-result.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/df49d61b1524e5f4fa95-320.webp",
+    "960": "assets/display-previews/df49d61b1524e5f4fa95-960.webp"
+  },
+  "assets/workflow-examples/flat-main.jpg": {
+    "width": 1696,
+    "height": 2528,
+    "320": "assets/display-previews/922b98f114802c2c68b4-320.webp",
+    "960": "assets/display-previews/922b98f114802c2c68b4-960.webp"
+  },
+  "assets/workflow-examples/flat-result.png": {
+    "width": 1792,
+    "height": 2400,
+    "320": "assets/display-previews/c0f31162922c54c98083-320.webp",
+    "960": "assets/display-previews/c0f31162922c54c98083-960.webp"
+  },
+  "assets/workflow-examples/fusion-loungewear-result.png": {
+    "width": 1792,
+    "height": 2400,
+    "320": "assets/display-previews/70d30f6e6028dfebacb2-320.webp",
+    "960": "assets/display-previews/70d30f6e6028dfebacb2-960.webp"
+  },
+  "assets/workflow-examples/fusion-loungewear.png": {
+    "width": 1792,
+    "height": 2400,
+    "320": "assets/display-previews/c8ec0fe63d82b9e9ee79-320.webp",
+    "960": "assets/display-previews/c8ec0fe63d82b9e9ee79-960.webp"
+  },
+  "assets/workflow-examples/fusion-main.png": {
+    "width": 1024,
+    "height": 1536,
+    "320": "assets/display-previews/44010e2712679fafbcb6-320.webp",
+    "960": "assets/display-previews/44010e2712679fafbcb6-960.webp"
+  },
+  "assets/workflow-examples/lingerie-model.png": {
+    "width": 793,
+    "height": 1062,
+    "320": "assets/display-previews/febc84f94c09d9215951-320.webp",
+    "960": "assets/display-previews/febc84f94c09d9215951-960.webp"
+  },
+  "assets/workflow-examples/lingerie-product.jpeg": {
+    "width": 1792,
+    "height": 2400,
+    "320": "assets/display-previews/32bae4955fe65242a675-320.webp",
+    "960": "assets/display-previews/32bae4955fe65242a675-960.webp"
+  },
+  "assets/workflow-examples/lingerie-result.png": {
+    "width": 794,
+    "height": 1064,
+    "320": "assets/display-previews/888bfb532d0b6ce933e3-320.webp",
+    "960": "assets/display-previews/888bfb532d0b6ce933e3-960.webp"
+  }
+}

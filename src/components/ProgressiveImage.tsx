@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { imagePreview, rememberImagePreview } from '../image-previews';
 import { assetDisplayUrl } from '../asset-display-url';
+import { bundledImage, imageDisplayPreview } from '../bundled-assets';
 import '../progressive-image.css';
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
   style?: CSSProperties;
   fit?: 'contain' | 'cover';
   eager?: boolean;
+  original?: boolean;
   onLoad?: (width: number, height: number) => void;
 };
 
@@ -20,12 +22,15 @@ export const ProgressiveImage = memo(function ProgressiveImage(props: Props) {
   return <ImageRequest key={props.src} {...props} />;
 });
 
-function ImageRequest({ src, alt, width, height, className = '', style, fit = 'cover', eager = false, onLoad }: Props) {
+function ImageRequest({ src, alt, width, height, className = '', style, fit = 'cover', eager = false, original = false, onLoad }: Props) {
   const host = useRef<HTMLSpanElement>(null);
   const picture = useRef<HTMLImageElement>(null);
   const [started, setStarted] = useState(eager);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [preview] = useState(() => imagePreview(src));
+  const [fallback, setFallback] = useState(false);
+  const originalUrl = assetDisplayUrl(src);
+  const displayUrl = original || fallback ? originalUrl : imageDisplayPreview(src, width && width <= 96 ? 320 : 960);
   const onLoadRef = useRef(onLoad); onLoadRef.current = onLoad;
 
   useEffect(() => {
@@ -47,7 +52,11 @@ function ImageRequest({ src, alt, width, height, className = '', style, fit = 'c
     const image = picture.current;
     let cancelled = false;
     let decoding = false;
-    const fail = () => { if (!cancelled) setState('error'); };
+    const fail = () => {
+      if (cancelled) return;
+      if (displayUrl !== originalUrl) setFallback(true);
+      else setState('error');
+    };
     const reveal = async () => {
       if (decoding || cancelled) return;
       decoding = true;
@@ -57,7 +66,8 @@ function ImageRequest({ src, alt, width, height, className = '', style, fit = 'c
         if (cancelled) return;
         if (!image.naturalWidth) { fail(); return; }
         if (!preview) rememberImagePreview(src, image);
-        onLoadRef.current?.(image.naturalWidth, image.naturalHeight);
+        const source = bundledImage(src);
+        onLoadRef.current?.(source?.width ?? image.naturalWidth, source?.height ?? image.naturalHeight);
         setState('ready');
       } catch { fail(); }
     };
@@ -69,7 +79,7 @@ function ImageRequest({ src, alt, width, height, className = '', style, fit = 'c
       image.removeEventListener('load', reveal);
       image.removeEventListener('error', fail);
     };
-  }, [started, src, preview]);
+  }, [started, src, preview, displayUrl, originalUrl]);
 
   const language = document.documentElement.lang;
   const failure = language === 'ja' ? '画像を読み込めませんでした' : language === 'en' ? 'Image failed to load' : '图片加载失败';
@@ -77,7 +87,7 @@ function ImageRequest({ src, alt, width, height, className = '', style, fit = 'c
     aria-busy={state === 'loading'} style={{ ...style, '--image-fit': fit } as CSSProperties}>
     {preview ? <img className="progressive-image-preview" src={preview} alt="" aria-hidden="true" draggable={false} />
       : <span className="progressive-image-placeholder" aria-hidden="true" />}
-    <img ref={picture} className="progressive-image-full" src={started ? assetDisplayUrl(src) : undefined} alt={state === 'error' ? '' : alt}
+    <img ref={picture} className="progressive-image-full" src={started ? displayUrl : undefined} alt={state === 'error' ? '' : alt}
       width={width} height={height} decoding="async" draggable={false} />
     {state === 'error' && <span className="progressive-image-error" role="img" aria-label={`${alt} · ${failure}`}>{failure}</span>}
   </span>;

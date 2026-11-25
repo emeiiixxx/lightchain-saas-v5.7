@@ -1,3 +1,4 @@
+import { iconAssetUrl } from '../inline-icons';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { Locale } from '../i18n';
@@ -24,7 +25,7 @@ type Props = {
 type Option = { value: string; label: string; icon?: string };
 
 function Artwork({ src, size = 16, className = '' }: { src: string; size?: number; className?: string }) {
-  return <span className={`icon ${className}`} aria-hidden="true" style={{ width: size, height: size, '--icon-url': `url("${src}")` } as CSSProperties} />;
+  return <span className={`icon ${className}`} aria-hidden="true" style={{ width: size, height: size, '--icon-url': `url("${iconAssetUrl(src)}")` } as CSSProperties} />;
 }
 
 export function MaterialRatioIcon({ ratio, size = 16 }: { ratio: string; size?: number }) {

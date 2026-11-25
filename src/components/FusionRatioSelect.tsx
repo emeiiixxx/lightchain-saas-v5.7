@@ -1,3 +1,4 @@
+import { iconAssetUrl } from '../inline-icons';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import type { Locale } from '../i18n';
@@ -25,7 +26,7 @@ type Props = {
 function RatioIcon({ ratio, size = 20 }: { ratio: string; size?: number }) {
   const file = ratio.replace(':', '-');
   return <span aria-hidden="true" className="icon" style={{ width: size, height: size,
-    '--icon-url': `url("${import.meta.env.BASE_URL}assets/fusion-ratio/${file}.svg")` } as CSSProperties} />;
+    '--icon-url': `url("${iconAssetUrl(`${import.meta.env.BASE_URL}assets/fusion-ratio/${file}.svg`)}")` } as CSSProperties} />;
 }
 
 // Figma 202:12611 / 202:12857 / 202:13027. Remember inputs independently

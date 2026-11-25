@@ -1,5 +1,6 @@
+import { inlineIconAssets } from './inline-icons';
 // Figma node 12:3127 assets; theme icons reuse the existing 5.2 TopBar artwork.
-export const assets = {
+export const assets = inlineIconAssets({
   cropEditorTitle: '/assets/crop-editor-v57/crop.svg',
   cropEditorZoomOut: '/assets/crop-editor-v57/zoom-out.svg',
   cropEditorZoomIn: '/assets/crop-editor-v57/zoom-in.svg',
@@ -185,4 +186,4 @@ export const assets = {
   imageSearch: "/assets/canvas/imageSearch.svg",
   saveAsset: "/assets/canvas/saveAsset.svg",
   sendIcon: "/assets/canvas/sendIcon.svg"
-} as const;
+} as const);

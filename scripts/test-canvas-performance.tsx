@@ -9,6 +9,11 @@ import { useEventHandlers } from '../src/useEventHandlers';
 import { decodeCanvasImages } from '../src/design-workbench/decode-canvas-images';
 import { assetDisplayUrl } from '../src/asset-display-url';
 import type { Viewport } from '../src/canvas';
+import { bundledImage, imageDisplayPreview } from '../src/bundled-assets';
+import { iconAssetUrl } from '../src/inline-icons';
+import { ProgressiveImage } from '../src/components/ProgressiveImage';
+import { prepareMainImage } from '../src/asset-library';
+import { readFileSync, statSync } from 'node:fs';
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'http://localhost/', pretendToBeVisual: true });
 for (const key of ['window', 'document', 'navigator', 'HTMLElement', 'HTMLDivElement', 'Element', 'Node', 'Image', 'MouseEvent'] as const) {
@@ -34,6 +39,72 @@ for (const [prop, size] of [['offsetWidth', 800], ['offsetHeight', 600], ['clien
 Object.defineProperty(dom.window.HTMLElement.prototype, 'getBoundingClientRect', { value() {
   return { x: 0, y: 0, left: 0, top: 0, right: this.offsetWidth, bottom: this.offsetHeight, width: this.offsetWidth, height: this.offsetHeight, toJSON() {} };
 } });
+
+test('display previews share duplicate images and preserve original dimensions and external URLs', () => {
+  const source = '/assets/upload/imgAsset10.png';
+  const alias = '/assets/design-workbench/upload/imgAsset10.png';
+  assert.equal(imageDisplayPreview(source), imageDisplayPreview(alias));
+  assert.ok(imageDisplayPreview(source).endsWith('-960.webp'));
+  assert.ok(imageDisplayPreview(source, 320).endsWith('-320.webp'));
+  const pages = 'https://example.com/lightchain-saas-v5.7/';
+  assert.ok(imageDisplayPreview(source, 320, pages, '/lightchain-saas-v5.7/').startsWith(pages + 'assets/display-previews/'));
+  assert.deepEqual(bundledImage(source), bundledImage(alias));
+  for (const url of ['https://other.example' + source, 'blob:http://localhost/id', 'data:image/png;base64,AAAA', '/unknown.png']) {
+    assert.equal(imageDisplayPreview(url), url);
+    assert.equal(bundledImage(url), undefined);
+  }
+});
+
+test('inline icons preserve the exact SVG artwork without separate icon downloads', () => {
+  const src = '/assets/canvas/hand.svg';
+  const inline = iconAssetUrl(src);
+  assert.equal(decodeURIComponent(inline.split(',')[1]), readFileSync('public' + src, 'utf8').trim());
+  assert.equal(iconAssetUrl('/lightchain-saas-v5.7' + src, 'https://example.com/lightchain-saas-v5.7/', '/lightchain-saas-v5.7/'), inline);
+  assert.equal(iconAssetUrl('https://remote.example' + src), 'https://remote.example' + src);
+});
+
+test('every generated display file exists and the eight seeded covers use less than 1 MB', () => {
+  const manifest = JSON.parse(readFileSync('src/asset-display-images.json', 'utf8'));
+  let coverBytes = 0;
+  for (const [src, image] of Object.entries(manifest) as [string, { width: number; height: number; '320': string; '960': string }][]) {
+    assert.ok(statSync('public/' + src).size > 0);
+    assert.ok(image.width > 0 && image.height > 0);
+    for (const size of ['320', '960'] as const) assert.ok(statSync('public/' + image[size]).size > 0);
+    if (src.startsWith('assets/prompt-role-covers-v57/')) coverBytes += statSync('public/' + image['960']).size;
+  }
+  assert.ok(coverBytes > 0 && coverBytes < 1_000_000);
+});
+
+test('thumbnail load reports source pixels, while original mode and failed previews use the original URL', async () => {
+  const host = document.createElement('div'); document.body.append(host);
+  const root = createRoot(host);
+  const src = '/assets/upload/imgAsset10.png';
+  let loaded: number[] = [];
+  try {
+    await act(async () => root.render(<ProgressiveImage src={src} alt="example" eager width={48} onLoad={(w, h) => { loaded = [w, h]; }} />));
+    const image = host.querySelector<HTMLImageElement>('.progressive-image-full')!;
+    Object.defineProperties(image, { naturalWidth: { value: 320 }, naturalHeight: { value: 320 }, decode: { value: async () => {} } });
+    await act(async () => image.dispatchEvent(new dom.window.Event('load')));
+    const source = bundledImage(src)!;
+    assert.deepEqual(loaded, [source.width, source.height]);
+    await act(async () => image.dispatchEvent(new dom.window.Event('error')));
+    assert.equal(image.getAttribute('src'), assetDisplayUrl(src));
+    await act(async () => root.render(<ProgressiveImage src={src} alt="example" eager original />));
+    assert.equal(image.getAttribute('src'), assetDisplayUrl(src));
+  } finally { await act(async () => root.unmount()); host.remove(); }
+});
+
+test('bundled canvas images use source dimensions without downloading a full image for metadata', async () => {
+  const originalImage = globalThis.Image;
+  Object.defineProperty(globalThis, 'Image', { configurable: true, value: class { constructor() { throw new Error('Unexpected original image request'); } } });
+  try {
+    const src = '/assets/upload/imgAsset10.png';
+    const image = await prepareMainImage({ id: 'example', name: 'example', url: src });
+    assert.equal(image.url, src);
+    assert.equal(image.naturalWidth, bundledImage(src)!.width);
+    assert.equal(image.naturalHeight, bundledImage(src)!.height);
+  } finally { Object.defineProperty(globalThis, 'Image', { configurable: true, value: originalImage }); }
+});
 
 test('image aliases share requests on localhost and Pages without rewriting external URLs', () => {
   const alias = '/assets/design-workbench/upload/imgAsset10.png';
