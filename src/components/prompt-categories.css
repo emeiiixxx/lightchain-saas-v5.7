@@ -1,8 +1,10 @@
 /* v5.7 Figma 152:11861 / 152:12145: shared category navigation and editing. */
 .prompt-library aside > header { flex-shrink: 0; }
 .prompt-library aside > nav { flex: 1; min-height: 0; }
+/* Figma 160:14596: each row owns its padding; the header adds no extra gap. */
 .prompt-library > aside > header { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0; border-bottom: 1px solid var(--border-weak); }
 .prompt-library > aside > header > .prompt-library-title-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-3xl); padding: var(--spacing-2xl) var(--spacing-2xl) 0; }
+.prompt-library .prompt-library-title-row > h2 { flex: 1; min-width: 0; padding-inline: var(--spacing-base); }
 .prompt-library > aside > header > .prompt-library-search-row { display: flex; padding: 0 var(--spacing-2xl) var(--spacing-2xl); }
 .prompt-library .prompt-library-search-row > .prompt-library-search { display: flex; flex: 1; min-width: 0; flex-direction: row; align-items: center; gap: var(--spacing-base); }
 .prompt-category-tabs { position: relative; display: flex; flex: 0 0 auto; align-items: flex-start; gap: var(--spacing-xs); padding: var(--spacing-base) var(--spacing-xl); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-behavior: auto; }
