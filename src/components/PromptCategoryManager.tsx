@@ -111,12 +111,12 @@ export function PromptCategoryManager({ categories, locale, phase, onClose, onSa
           style={{ order: sorting.order.indexOf(category) }}
           draggable={!busy && shown.length > 1} onPointerDownCapture={sorting.prepare}
           onDragStart={event => sorting.begin(event, category)} onDragEnd={sorting.end} onKeyDown={event => sorting.keyDown(event, category)}>
-        <TagChip size="m" appearance="outline" disabled={busy} title={`${promptCategoryLabel(category, locale)} · ${sortingCopy[locale].label}`}
-          trailing={<Button className="prompt-category-manager-remove" disabled={busy} draggable={false} aria-label={`${t.remove} · ${promptCategoryLabel(category, locale)}`} title={t.remove} onClick={() => { nextFocus.current = index; setShown(previous => previous.filter(item => item !== category)); setError(''); }}><Icon name="promptCategoryRemove" size={16}/></Button>}>
+        <TagChip size="m" appearance="outline" disabled={busy || adding} title={`${promptCategoryLabel(category, locale)} · ${sortingCopy[locale].label}`}
+          trailing={<Button className="prompt-category-manager-remove" disabled={busy || adding} draggable={false} aria-label={`${t.remove} · ${promptCategoryLabel(category, locale)}`} title={t.remove} onClick={() => { if (busyRef.current || adding) return; nextFocus.current = index; setShown(previous => previous.filter(item => item !== category)); setError(''); }}><Icon name="promptCategoryRemove" size={16}/></Button>}>
           {promptCategoryLabel(category, locale)}
         </TagChip></div>)}
       </div>
-      <div className="prompt-category-manager-warning" data-node-id="194:17762"><Icon name="promptCategoryInfo" size={16}/><p>{t.description}</p></div>
+      {!adding && <div className="prompt-category-manager-warning" data-node-id="194:17762"><Icon name="promptCategoryInfo" size={16}/><p>{t.description}</p></div>}
       </div>}
       {adding ? <PromptCategoryNameInput inputRef={nameInput} name={name} locale={locale} disabled={busy} onChange={value => { setName(value); setError(''); }} onCancel={cancelAdding} onAdd={addCategory}/>
         : <Button variant="text" size="m" icon="promptCategoryAdd" className="prompt-category-add" data-node-id="185:16451" disabled={busy} onClick={startAdding}>{categoryText.custom}</Button>}
