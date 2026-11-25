@@ -4,7 +4,7 @@ import { Button } from './ui';
 import { GenerateTaskButton } from './GenerateTaskButton';
 import { ToolbarHoverMenu } from './ToolbarHoverMenu';
 import {
-  CROP_PRESETS_CHANGED_EVENT, CROP_PRESETS_STORAGE_KEY, FREE_CROP_PRESET, MAX_CUSTOM_CROP_PRESETS, DEMO_MAX_CUSTOM_CROP_PRESET_EDGE,
+  CROP_PRESETS_CHANGED_EVENT, CROP_PRESETS_STORAGE_KEY, FREE_CROP_PRESET, MAX_CUSTOM_CROP_PRESETS, MIN_CUSTOM_CROP_PRESET_EDGE, DEMO_MAX_CUSTOM_CROP_PRESET_EDGE,
   customCropPreset, readCustomCropPresets, saveCustomCropPresets, type CropPreset, type CustomCropPreset,
 } from '../crop-presets';
 import '../crop-preset-panel.css';
@@ -25,9 +25,9 @@ const presetLimitCopy = {
 };
 
 const presetDimensionLimitCopy = {
-  'zh-CN': `宽或高超过 ${DEMO_MAX_CUSTOM_CROP_PRESET_EDGE}px，请重新输入`,
-  en: `Width or height exceeds ${DEMO_MAX_CUSTOM_CROP_PRESET_EDGE}px. Enter a smaller value.`,
-  ja: `幅または高さが${DEMO_MAX_CUSTOM_CROP_PRESET_EDGE}pxを超えています。入力し直してください。`,
+  'zh-CN': `宽高须为 ${MIN_CUSTOM_CROP_PRESET_EDGE}–${DEMO_MAX_CUSTOM_CROP_PRESET_EDGE}px，请重新输入`,
+  en: `Width and height must be ${MIN_CUSTOM_CROP_PRESET_EDGE}–${DEMO_MAX_CUSTOM_CROP_PRESET_EDGE}px. Please enter valid values.`,
+  ja: `幅と高さは${MIN_CUSTOM_CROP_PRESET_EDGE}〜${DEMO_MAX_CUSTOM_CROP_PRESET_EDGE}pxで入力してください。`,
 };
 
 const groups = [
@@ -57,6 +57,10 @@ function positiveInteger(value: string) {
   return /^\d+$/.test(value) && Number.isSafeInteger(number) && number > 0 ? number : null;
 }
 
+function dimensionOutOfRange(value: number) {
+  return value < MIN_CUSTOM_CROP_PRESET_EDGE || value > DEMO_MAX_CUSTOM_CROP_PRESET_EDGE;
+}
+
 type PresetDraft = { id: string | null; width: string; height: string; ratio: number | null };
 type Props = { locale: Locale; selectedId: string; onSelect: (preset: CropPreset) => void; submitDisabled: boolean; busy: boolean; onSubmit: () => void; onNotice: (message: string) => void; outputInfo?: ReactNode };
 
@@ -65,7 +69,7 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
   const [customPresets, setCustomPresets] = useState(readCustomCropPresets);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(() => customPresets.length > 0 ? 'custom' : 'general');
   const [draft, setDraft] = useState<PresetDraft | null>(null);
-  const [formError, setFormError] = useState<'invalid' | 'tooLarge' | null>(null);
+  const [formError, setFormError] = useState<'invalid' | 'outOfRange' | null>(null);
   const [moreId, setMoreId] = useState<string | null>(null);
   const widthInput = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -73,8 +77,8 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
   const groupBeforeAdding = useRef<string | null>(null);
   const addingPreset = draft?.id === null;
   const validWidth = draft ? positiveInteger(draft.width) : null, validHeight = draft ? positiveInteger(draft.height) : null;
-  const widthError = Boolean(formError && (!validWidth || validWidth > DEMO_MAX_CUSTOM_CROP_PRESET_EDGE));
-  const heightError = Boolean(formError && (!validHeight || validHeight > DEMO_MAX_CUSTOM_CROP_PRESET_EDGE));
+  const widthError = Boolean(formError && (!validWidth || dimensionOutOfRange(validWidth)));
+  const heightError = Boolean(formError && (!validHeight || dimensionOutOfRange(validHeight)));
   const formErrorId = `${instanceId}-dimension-error`;
   const customExpanded = expandedGroup === 'custom', customBodyId = `${instanceId}-custom`;
 
@@ -159,8 +163,8 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
   }
   function confirmDraft() {
     if (!draft || !validWidth || !validHeight) { setFormError('invalid'); return; }
-    if (validWidth > DEMO_MAX_CUSTOM_CROP_PRESET_EDGE || validHeight > DEMO_MAX_CUSTOM_CROP_PRESET_EDGE) {
-      setFormError('tooLarge'); return;
+    if (dimensionOutOfRange(validWidth) || dimensionOutOfRange(validHeight)) {
+      setFormError('outOfRange'); return;
     }
     const duplicate = customPresets.find(preset => preset.id !== draft.id && preset.outputWidth === validWidth && preset.outputHeight === validHeight);
     const editingExisting = draft.id && customPresets.some(item => item.id === draft.id);
@@ -201,7 +205,7 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
         <Button variant="primary" type="submit" disabled={!validWidth || !validHeight}>{t.confirm}</Button>
       </div>
     </div>
-    {formError && <p id={formErrorId} className="crop-preset-error" role="alert">{formError === 'tooLarge' ? presetDimensionLimitCopy[locale] : t.invalid}</p>}
+    {formError && <p id={formErrorId} className="crop-preset-error" role="alert">{formError === 'outOfRange' ? presetDimensionLimitCopy[locale] : t.invalid}</p>}
   </form>;
 
   return <aside ref={panelRef} className="crop-preset-panel" aria-label={t.title} data-node-id="8:641" lang={locale}>

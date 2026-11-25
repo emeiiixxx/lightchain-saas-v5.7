@@ -6,7 +6,8 @@ export type CustomCropPreset = CropPreset & { outputWidth: number; outputHeight:
 
 export const FREE_CROP_PRESET: CropPreset = { id: 'free', label: '自由', ratio: null };
 export const MAX_CUSTOM_CROP_PRESETS = 5;
-// Demo-only input limit; the production width/height limits await development confirmation.
+export const MIN_CUSTOM_CROP_PRESET_EDGE = 100;
+// Demo-only upper limit; the production maximum awaits development confirmation.
 export const DEMO_MAX_CUSTOM_CROP_PRESET_EDGE = 9000;
 export const CROP_PRESETS_STORAGE_KEY = 'lc-v57-crop-presets';
 export const CROP_PRESETS_CHANGED_EVENT = 'lc-v57-crop-presets-changed';
