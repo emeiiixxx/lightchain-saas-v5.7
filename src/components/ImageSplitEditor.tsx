@@ -18,12 +18,13 @@ type Props = {
 type Pointer = Pick<PointerEvent, 'pointerId' | 'clientX' | 'clientY'>;
 type Drag = { pointer: number; target: HTMLElement; start: ImageEditorPoint; pan: ImageEditorPoint; scale: number; snapshot: SplitGrid;
   mode: 'pan' | SplitAxis; index: number };
+const MAX_CUSTOM_SPLIT_COUNT = 10;
 const copy = {
   'zh-CN': {
     title: '图片切分', close: '关闭图片切分', settings: '切分设置', original: '原图', quantity: '配置切分数量',
     hint: '拖动分割线调整切割范围 · 双击分割线删除 · 点击宫格选择',
     description: '拖动分割线可自由划分，宫格随线联动', presets: '快捷预设', custom: '自定义输入', columns: '列', rows: '行',
-    apply: '应用划分', lines: '分割线', vertical: '添加竖线', horizontal: '添加横线', clear: '清空分割线',
+    apply: '应用切分', lines: '分割线', vertical: '添加竖线', horizontal: '添加横线', clear: '清空分割线',
     select: '选择切片', all: '全选', none: '取消全选', output: '每个选中的切片生成一张独立图片',
     loading: '正在读取图片…', loadError: '图片读取失败，请关闭后重试', exporting: '正在切分…', exportError: '图片切分失败，请重试',
     invalid: '请输入大于 0 的整数，行列数不能超过原图像素', limit: `单次最多切分 ${MAX_SPLIT_CELLS} 格，请调整行列数`,
@@ -31,7 +32,7 @@ const copy = {
     spacing: '宫格显示间距不能小于 12px，请减少行列数',
     addSpacing: '当前没有足够间距，请放大画面后再添加分割线',
     grid: (c: number, r: number) => `当前${c}×${r}=${c * r}，可拖动分割线，调整为不等分`,
-    count: (total: number, selected: number) => ({ before: `共 ${total} 片 · 已选 `, selected: `${selected} 片`, after: '' }),
+    count: (total: number, selected: number) => ({ before: `共 ${total} 张 · 已选 `, selected: `${selected} 张`, after: '' }),
     submit: (count: number) => `切分 ${count} 张`, cell: (index: number) => `宫格 ${index}`,
     line: (axis: SplitAxis, index: number) => `${axis === 'x' ? '竖' : '横'}分割线 ${index}`,
     lineHelp: '拖动或使用方向键调整位置，双击或按 Delete 删除',
@@ -248,10 +249,10 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
   }
   function applyCustom() {
     if (!grid || busy || drag.current) return;
-    const c = Number(columns), r = Number(rows);
+    // Clamp only on submission; updateGrid writes the applied counts back to both inputs.
+    const c = Math.min(MAX_CUSTOM_SPLIT_COUNT, Number(columns)), r = Math.min(MAX_CUSTOM_SPLIT_COUNT, Number(rows));
     if (!/^\d+$/.test(columns) || !/^\d+$/.test(rows) || !Number.isSafeInteger(c) || !Number.isSafeInteger(r)
       || c < 1 || r < 1 || c > grid.width || r > grid.height) { setFormError(t.invalid); return; }
-    if (c * r > MAX_SPLIT_CELLS) { setFormError(t.limit); return; }
     changeGrid(current => resizeSplitGrid(current, c, r));
   }
   async function apply() {
