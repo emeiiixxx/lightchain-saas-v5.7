@@ -31,7 +31,7 @@ test('switching workspaces preserves each Flow canvas selection, drag and marque
 
   const cache = path.resolve('node_modules/.cache/lc-workspace-isolation-test');
   await mkdir(cache, { recursive: true });
-  const bundled = await build({ entryPoints: ['src/components/ReactFlowCanvas.tsx'], bundle: true, packages: 'external', format: 'esm', jsx: 'automatic', loader: { '.css': 'empty' }, define: { 'import.meta.env.BASE_URL': '"/"' }, write: false });
+  const bundled = await build({ entryPoints: ['src/components/ReactFlowCanvas.tsx'], bundle: true, packages: 'external', format: 'esm', jsx: 'automatic', loader: { '.css': 'empty', '.svg': 'text' }, define: { 'import.meta.env.BASE_URL': '"/"' }, write: false });
   const modulePath = path.join(cache, 'adapter.mjs');
   await writeFile(modulePath, bundled.outputFiles[0].text);
   const { createElement: h, useState, useCallback, act } = await import('react');
