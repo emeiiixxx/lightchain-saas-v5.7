@@ -1,6 +1,8 @@
 import { inlineIconAssets } from './inline-icons';
+import imageSplitIcon from './assets-image-split.svg?raw';
 // Figma node 12:3127 assets; theme icons reuse the existing 5.2 TopBar artwork.
 export const assets = inlineIconAssets({
+  imageSplit: `data:image/svg+xml,${encodeURIComponent(imageSplitIcon).replace(/'/g, '%27')}`,
   cropEditorTitle: '/assets/crop-editor-v57/crop.svg',
   cropEditorZoomOut: '/assets/crop-editor-v57/zoom-out.svg',
   cropEditorZoomIn: '/assets/crop-editor-v57/zoom-in.svg',

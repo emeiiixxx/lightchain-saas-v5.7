@@ -1,5 +1,6 @@
 // Workspace copy: Simplified Chinese key, English, Japanese.
 export const workspaceCopy: Record<string, readonly [string, string]> = {
+'图片切分': ['Split Image', '画像分割'],
 '宫格图切分': ['Grid split', 'グリッド分割'],
 '4宫格': ['2×2 grid', '4分割'],
 '9宫格': ['3×3 grid', '9分割'],

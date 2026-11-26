@@ -2,7 +2,9 @@ import { canvasMediaDisplayName } from '../../canvas-media-filename';
 import { EditableFilename } from '../../components/EditableFilename';
 import { ImageEditingMenu } from '../../components/ImageEditingMenu';
 import { CropEditor } from '../../components/CropEditor';
-import { prepareGridSplitResults } from '../grid-split';
+import { ImageSplitEditor } from '../../components/ImageSplitEditor';
+import type { SplitGrid, SplitResult } from '../../image-split';
+import { prepareImageSplitResults } from '../image-split';
 import { useInputMemory } from '../useInputMemory';
 import { useEventCallback } from '../useEventCallback';
 import { readDemoState, writeDemoState, restoreDemoUrls, rememberDemoAsset, deleteDemoAsset } from '../demo-storage';
@@ -400,26 +402,38 @@ export function Workbench({ board, open, onOpenChange, phase, onUpload, onReplac
   const cropSource = useRef<CanvasImage | null>(null);
   const cropEpoch = useRef(0);
   const cropBoard = useRef(board); cropBoard.current = board;
-  const gridSplitEpoch = useRef(0);
-  const pendingGridSplits = useRef(new Set<string>());
-  const [gridSplittingImages, setGridSplittingImages] = useState<string[]>([]);
+  const [splitImage, setSplitImage] = useState<CanvasImage | null>(null);
+  const shownSplit = usePresence(splitImage);
+  const splitSource = useRef<CanvasImage | null>(null);
+  const splitEpoch = useRef(0);
+  const splitSubmitting = useRef(false);
   const closeCrop = useEventCallback(() => { cropEpoch.current++; cropSource.current = null; setCropImage(null); });
+  const closeSplit = useEventCallback(() => { splitEpoch.current++; splitSource.current = null; setSplitImage(null); });
   const openCrop = (source: CanvasImage) => {
     if (board.locked || !board.restored) return;
     setMenu(null); setQuickEdit(null);
     cropEpoch.current++; cropSource.current = source; setCropImage(source);
   };
+  const openSplit = (source: CanvasImage) => {
+    if (board.locked || !board.restored || splitSubmitting.current) return;
+    setMenu(null); setQuickEdit(null);
+    splitEpoch.current++; splitSource.current = source; setSplitImage(source);
+  };
   useEffect(() => {
-    const leave = () => { closeCrop(); gridSplitEpoch.current++; };
+    const leave = () => { closeCrop(); closeSplit(); };
     const routeChanged = () => { if (window.parent.location.hash.split('?')[0] !== '#/design-workspace') leave(); };
     window.addEventListener('lc-v57-design:leave-project', leave);
     if (window.parent !== window) window.parent.addEventListener('hashchange', routeChanged);
     return () => {
-      cropEpoch.current++; cropSource.current = null; gridSplitEpoch.current++;
+      cropEpoch.current++; cropSource.current = null; splitEpoch.current++; splitSource.current = null;
       window.removeEventListener('lc-v57-design:leave-project', leave);
       if (window.parent !== window) window.parent.removeEventListener('hashchange', routeChanged);
     };
-  }, [closeCrop]);
+  }, [closeCrop, closeSplit]);
+  useEffect(() => {
+    if (splitImage && !board.images.some(image => image.id === splitImage.id && image.url === splitImage.url
+      && !image.shape && !image.generating && !image.generationFailed)) closeSplit();
+  }, [board.images, splitImage, closeSplit]);
   const [localEdit, setLocalEdit] = useState<string | null>(null);
   const [localEditTool, setLocalEditTool] = useState<CanvasEditTool | '印花裂变'>('局部修改');
   const shownPrintVariation = usePresence(localEditTool === '印花裂变' ? localEdit : null);
@@ -427,12 +441,12 @@ export function Workbench({ board, open, onOpenChange, phase, onUpload, onReplac
   const [pendingToolFocus, setPendingToolFocus] = useState<string[] | null>(null);
 
   useLayoutEffect(() => {
-    if (!pendingToolFocus || localEdit || board.locked) return;
+    if (!pendingToolFocus || localEdit || shownSplit.value || board.locked) return;
     // Hand the camera from the source editor to the new placeholders only
     // after the editor has unmounted and the canvas has committed the batch.
     board.focusAgentResults(pendingToolFocus);
     setPendingToolFocus(null);
-  }, [pendingToolFocus, localEdit, board.locked, board.focusAgentResults]);
+  }, [pendingToolFocus, localEdit, shownSplit.value, board.locked, board.focusAgentResults]);
 
   const closeLocalEdit = () => { setLocalEdit(null); board.setInteractionLocked(false); };
   const [quickEdit, setQuickEdit] = useState<string | null>(null);
@@ -469,52 +483,52 @@ export function Workbench({ board, open, onOpenChange, phase, onUpload, onReplac
       generationTimers.current.clear();
     };
   }, []);
-  const splitImageGrid = async (opened: CanvasImage, grid: 4 | 9) => {
-    if (board.locked || !board.restored || pendingGridSplits.current.has(opened.id)) return;
-    const epoch = gridSplitEpoch.current;
-    const currentSource = () => generationMounted.current && epoch === gridSplitEpoch.current
+  const applyImageSplit = async (opened: CanvasImage, pieces: SplitResult[], grid: SplitGrid, signal: AbortSignal) => {
+    if (splitSubmitting.current) throw new DOMException('Image split already submitted', 'AbortError');
+    const epoch = splitEpoch.current;
+    const currentSource = () => !signal.aborted && generationMounted.current && epoch === splitEpoch.current
+      && splitSource.current?.id === opened.id && splitSource.current.url === opened.url
       && cropBoard.current.restored && !cropBoard.current.locked
       && (window.parent === window || window.parent.location.hash.split('?')[0] === '#/design-workspace')
       ? cropBoard.current.images.find(item => item.id === opened.id && item.url === opened.url
         && !item.shape && !item.generating && !item.generationFailed) : undefined;
-    if (!currentSource()) return;
-    pendingGridSplits.current.add(opened.id);
-    setGridSplittingImages([...pendingGridSplits.current]);
-    setMenu(null);
-    let prepared: Awaited<ReturnType<typeof prepareGridSplitResults>> | undefined;
+    if (!currentSource()) throw new DOMException('Image split session is no longer active', 'AbortError');
+    splitSubmitting.current = true;
+    let prepared: Awaited<ReturnType<typeof prepareImageSplitResults>> | undefined;
+    let placeholderIds: string[] = [];
     let committed = false;
     try {
       await restoringRecords.current;
-      if (!currentSource()) return;
-      prepared = await prepareGridSplitResults(opened, grid, locale, () => !!currentSource());
+      if (!currentSource()) throw new DOMException('Image split session is no longer active', 'AbortError');
+      prepared = await prepareImageSplitResults(opened, pieces, locale, () => !!currentSource());
       const source = currentSource();
-      if (!source) return;
+      if (!source) throw new DOMException('Image split session is no longer active', 'AbortError');
       const id = crypto.randomUUID();
       const placeholders = cropBoard.current.beginGeneration(source.id, prepared.results.length, {
-        name: '宫格图切分', taskRecordId: id,
+        name: '图片切分', taskRecordId: id, focus: false,
         outputSizes: prepared.results.map(result => ({ width: result.image.naturalWidth, height: result.image.naturalHeight })),
       });
+      placeholderIds = placeholders.map(item => item.id);
       if (placeholders.length !== prepared.results.length) throw new Error('Unable to add grid images');
-      cropBoard.current.finishGeneration(placeholders.map(item => item.id), prepared.results);
+      cropBoard.current.finishGeneration(placeholderIds, prepared.results);
       committed = true;
       const now = new Date();
       const time = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const record: GenerationRecord = {
-        id, title: '宫格图切分', time, sourceId: source.id,
+        id, title: '图片切分', time, sourceId: source.id,
         supportsPrompt: false, replayable: false, count: prepared.results.length,
-        tags: [{ label: '原图', image: source.url }, { label: grid === 4 ? '4宫格' : '9宫格' }],
+        tags: [{ label: '原图', image: source.url }, { label: `${grid.columns.length + 1}×${grid.rows.length + 1}` }],
         images: prepared.results.map((result, index) => ({
           id: placeholders[index].id, url: result.url,
           height: 92 * result.image.naturalHeight / result.image.naturalWidth, status: 'success',
         })),
       };
       setGenerationRecords(previous => [record, ...previous]);
-    } catch {
-      if (currentSource()) onNotify('图片切分失败，请重试', 'error');
+      setPendingToolFocus(placeholderIds);
     } finally {
+      if (!committed && placeholderIds.length) cropBoard.current.finishGeneration(placeholderIds, null);
       if (prepared && !committed) await prepared.discard();
-      pendingGridSplits.current.delete(opened.id);
-      if (generationMounted.current) setGridSplittingImages([...pendingGridSplits.current]);
+      splitSubmitting.current = false;
     }
   };
   const finishDemoBatch = (recordId: string, placeholders: CanvasImage[], results: Omit<CanvasImage, 'x' | 'y'>[], allowSimulatedFailure = true) => {
@@ -999,8 +1013,7 @@ export function Workbench({ board, open, onOpenChange, phase, onUpload, onReplac
           <ImageEditingMenu variant="canvas" locale={locale}
             image={{ id: selected.id, url: selected.url, naturalWidth: selected.image.naturalWidth, naturalHeight: selected.image.naturalHeight }}
             open={menu === 'more'} onOpenChange={nextOpen => setMenu(current => nextOpen ? 'more' : current === 'more' ? null : current)}
-            onGridSplit={grid => { void splitImageGrid(selected, grid); }} gridSplitDisabled={gridSplittingImages.includes(selected.id)}
-            onAction={action => action === 'smartCrop' ? openCrop(selected) : unavailable()} />
+            onAction={action => action === 'smartCrop' ? openCrop(selected) : action === 'imageSplit' ? openSplit(selected) : unavailable()} />
         </div>
         <Divider vertical /><Button onClick={unavailable}><Icon name="element-tech" size={20} />{t("工艺单")}</Button>
         <Button onClick={() => { onOpenChange(false); setQuickEdit(null); setMenu(null); setTextEdit(selected); }}><Icon name="text-edit/text-edit" size={20} />{t('文字编辑')}</Button><Divider vertical />
@@ -1089,6 +1102,8 @@ export function Workbench({ board, open, onOpenChange, phase, onUpload, onReplac
       void generateQuickEdit(generationDraft, source.id, true);
     }} />}
     {shownTextEdit.value && <TextEditDialog key={shownTextEdit.value.id} source={shownTextEdit.value} phase={shownTextEdit.phase} onClose={() => setTextEdit(null)} onSubmit={(input, prompt) => generateTextEdit(input, prompt, shownTextEdit.value!.id)} />}
+    {shownSplit.value && <ImageSplitEditor key={`${shownSplit.value.id}:${shownSplit.value.url}`} source={shownSplit.value} locale={locale}
+      phase={shownSplit.phase} onClose={closeSplit} onApply={(pieces, grid, signal) => applyImageSplit(shownSplit.value!, pieces, grid, signal)} />}
     {shownCrop.value && <CropEditor key={`${shownCrop.value.id}:${shownCrop.value.url}`} source={shownCrop.value} locale={locale} phase={shownCrop.phase} onClose={closeCrop} onApply={async (result, signal) => {
       const opened = shownCrop.value!, epoch = cropEpoch.current;
       const currentSource = () => !signal.aborted && epoch === cropEpoch.current && cropSource.current?.id === opened.id

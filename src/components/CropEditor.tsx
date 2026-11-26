@@ -4,7 +4,8 @@ import { fitCropRatio, fullCrop, getCropPixelRect, ImageCropError, MAX_CROP_OUTP
 import type { Locale } from '../i18n';
 import { usePresence } from '../usePresence';
 import { CropPresetPanel, type CropPreset } from './CropPresetPanel';
-import { SettingSelect } from './SettingSelect';
+import { ImageEditorZoom } from './ImageEditorZoom';
+import { imageEditorViewport, imageEditorZoomAt } from '../image-editor-viewport';
 import { Toast } from './Toast';
 import { Button, Icon } from './ui';
 import '../setting-select.css';
@@ -69,9 +70,7 @@ export function CropEditor({ source, locale, phase, onClose, onApply }: Props) {
     ? outputText.tooLarge : '';
   const lowResolutionText = outputPreset.kind === 'commerce' ? outputText.belowPlatformRecommendation : outputText.lowResolution;
   const outputWarning = pixelCrop && (outputWidth > pixelCrop.width || outputHeight > pixelCrop.height) ? lowResolutionText : '';
-  const sidebarEnd = viewport.width <= 760 ? 296 : 360;
-  const center = { x: viewport.width < 1100 ? (sidebarEnd + viewport.width) / 2 : viewport.width / 2, y: viewport.height / 2 };
-  const fitZoom = bounds ? Math.min(1, Math.max(32, 2 * Math.min(center.x - sidebarEnd, viewport.width - center.x - 32)) / bounds.width, Math.max(32, viewport.height - 176) / bounds.height) : 1;
+  const { center, fitZoom } = imageEditorViewport(viewport, bounds);
   const updateCrop = (next: CropRect) => { cropRef.current = next; setCrop(next); };
   const cancel = useCallback(() => { job.current?.abort(); drag.current = null; onClose(); }, [onClose]);
 
@@ -148,9 +147,9 @@ export function CropEditor({ source, locale, phase, onClose, onApply }: Props) {
   }
   function changeZoom(value: number, point?: Point) {
     if (!Number.isFinite(value) || !image || drag.current) return;
-    const next = Math.max(.01, Math.min(4, value)), factor = next / zoom;
-    if (point) setPan(previous => ({ x: point.x - center.x - (point.x - center.x - previous.x) * factor, y: point.y - center.y - (point.y - center.y - previous.y) * factor }));
-    setZoom(next);
+    const next = imageEditorZoomAt(zoom, pan, center, value, point);
+    if (point) setPan(previous => imageEditorZoomAt(zoom, previous, center, value, point).pan);
+    setZoom(next.zoom);
   }
   function fit() { if (image && !drag.current) { setZoom(fitZoom); setPan({ x: 0, y: 0 }); } }
   function start(event: ReactPointerEvent, mode: Drag['mode']) {
@@ -208,8 +207,6 @@ export function CropEditor({ source, locale, phase, onClose, onApply }: Props) {
         : t.exportError);
     } finally { if (job.current === controller) job.current = null; if (alive.current) setBusy(false); }
   }
-  const zoomValue = String(Math.round(zoom * 100));
-  const zoomOptions = [...new Set([10, 25, 50, 75, 100, 150, 200, 400, Number(zoomValue)])].sort((a, b) => a - b).map(value => ({ value: String(value), label: `${value}%` }));
   const imageWidth = (bounds?.width ?? 0) * zoom, imageHeight = (bounds?.height ?? 0) * zoom;
   pointerUpHandler.current = event => { move(event); end(event); };
   wheelHandler.current = event => {
@@ -254,12 +251,7 @@ export function CropEditor({ source, locale, phase, onClose, onApply }: Props) {
     <header className="crop-editor-header">
       <h1><Icon name="cropEditorTitle" size={24} />{t.title}</h1>
       <div className="crop-editor-header-actions">
-        <div className="crop-editor-zoom" data-node-id="8:629">
-          <Button disabled={!image} aria-label={t.zoomOut} onClick={() => changeZoom(zoom / 1.25)}><Icon name="cropEditorZoomOut" size={20} /></Button>
-          <SettingSelect label={t.zoom} value={zoomValue} options={[...zoomOptions, { value: 'fit', label: t.fit }]} chevron={<Icon name="cropEditorChevron" size={16} />}
-            portalContainer={dialog.current} onChange={value => value === 'fit' ? fit() : changeZoom(Number(value) / 100)} />
-          <Button disabled={!image} aria-label={t.zoomIn} onClick={() => changeZoom(zoom * 1.25)}><Icon name="cropEditorZoomIn" size={20} /></Button>
-        </div>
+        <ImageEditorZoom locale={locale} zoom={zoom} disabled={!image} portalContainer={dialog.current} onChange={changeZoom} onFit={fit} />
         <Button className="crop-editor-close" aria-label={t.close} onClick={cancel}><Icon name="cropEditorClose" size={24} /></Button>
       </div>
     </header>

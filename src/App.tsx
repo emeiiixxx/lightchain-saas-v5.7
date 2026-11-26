@@ -12,6 +12,8 @@ import { useRememberProjectCoverUse } from './project-cover-onboarding';
 import { notify, ToastHost } from './components/Toast';
 import { CutoutEditor } from './components/CutoutEditor';
 import { CropEditor } from './components/CropEditor';
+import { ImageSplitEditor } from './components/ImageSplitEditor';
+import type { SplitResult } from './image-split';
 import { DrawingGuideEditor } from './components/DrawingGuideEditor';
 import { isReferenceOnlyFusion, normalizeFusionReferences, isMultiInputWorkflow, fusionReferences, batchMainImages, workflowInputs, workflowReferenceLimit, workflowWidth, workflowHeight, workflowSources, workflowMainSource, createMergeEditor, createBatchEditor, workflowDescendantIds, FUSION_GAP, MAX_FUSION_REFERENCES, MAX_BATCH_MAIN_IMAGES, MAX_DIRECTED_POINTS, type WorkflowKind, type FusionReference } from './canvas';
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
@@ -195,6 +197,21 @@ export default function App() {
     cropEpoch.current++; cropSource.current = source; setCropImage(source);
   };
   useEffect(() => () => { cropEpoch.current++; cropSource.current = null; }, []);
+  const [splitImage, setSplitImage] = useState<CanvasImage | null>(null);
+  const shownSplit = usePresence(splitImage);
+  const splitSource = useRef<CanvasImage | null>(null);
+  const splitEpoch = useRef(0);
+  const splitSubmitting = useRef(false);
+  const closeSplit = useCallback(() => { splitEpoch.current++; splitSource.current = null; setSplitImage(null); }, []);
+  const openSplit = (source: CanvasImage | undefined) => {
+    if (!source || source.nodeOnly || source.generation || splitSubmitting.current || currentPage() !== 'canvas') return;
+    splitEpoch.current++; splitSource.current = source; setSplitImage(source);
+  };
+  useEffect(() => () => { splitEpoch.current++; splitSource.current = null; }, []);
+  useEffect(() => {
+    if (splitImage && !images.some(image => image.id === splitImage.id && image.url === splitImage.url
+      && !image.nodeOnly && !image.generation)) closeSplit();
+  }, [images, splitImage, closeSplit]);
   const [drawingImage, setDrawingImage] = useState<ReferenceGuideTarget | null>(null);
   const guideOpenEpoch = useRef(0);
   const shownDrawing = usePresence(drawingImage);
@@ -346,12 +363,12 @@ export default function App() {
       uploadPoint.current = null;
       setPage(currentPage());
       setMenu(null); setCanvasMenu(null); setDirectedTarget(null); setSpaceDown(false); setDragging(false); setSelecting(false); setSnapGuide(null); setCanvasReference(null);
-      setModal(null); setReferenceTarget(null); setMainTarget(null); setCutoutImage(null); closeCrop(); setPreviewImage(null);
+      setModal(null); setReferenceTarget(null); setMainTarget(null); setCutoutImage(null); closeCrop(); closeSplit(); setPreviewImage(null);
       document.dispatchEvent(new CustomEvent('lc-select-open', { detail: 'page-navigation' }));
     };
     window.addEventListener('hashchange', route);
     return () => window.removeEventListener('hashchange', route);
-  }, [closeCrop]);
+  }, [closeCrop, closeSplit]);
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -820,6 +837,54 @@ export default function App() {
     }
   }
 
+  async function applyImageSplit(opened: CanvasImage, pieces: SplitResult[], signal: AbortSignal) {
+    if (splitSubmitting.current || !pieces.length) throw new DOMException('Image split unavailable', 'AbortError');
+    const epoch = splitEpoch.current;
+    const currentSource = () => !signal.aborted && epoch === splitEpoch.current && splitSource.current?.id === opened.id
+      && splitSource.current.url === opened.url && currentPage() === 'canvas'
+      ? imageRef.current.find(item => item.id === opened.id && item.url === opened.url && !item.nodeOnly && !item.generation) : undefined;
+    if (!currentSource()) throw new DOMException('Image split session is no longer active', 'AbortError');
+    splitSubmitting.current = true;
+    const urls: string[] = [];
+    let committed = false;
+    try {
+      // Prepare the whole batch before changing the scene or its undo history.
+      for (const piece of pieces) {
+        if (!currentSource()) throw new DOMException('Image split session is no longer active', 'AbortError');
+        const url = URL.createObjectURL(piece.blob);
+        urls.push(url);
+        const decoded = new Image(); decoded.src = url; await decoded.decode();
+      }
+      const source = currentSource();
+      if (!source) throw new DOMException('Image split session is no longer active', 'AbortError');
+      const current = imageRef.current;
+      const placed = createImageResults(current, pieces.map((piece, index) => {
+        const width = Math.min(360, source.width, piece.width);
+        return { sourceId: source.id, sourceUrl: source.url, name: source.name, url: urls[index],
+          width, height: width * piece.height / piece.width };
+      }));
+      if (placed.length !== pieces.length) throw new DOMException('Image split source is no longer available', 'AbortError');
+      const id = crypto.randomUUID();
+      const label = locale === 'en' ? 'Split Image' : locale === 'ja' ? '画像分割' : '图片切分';
+      const results = fileNamer.assign(placed.map((image, index) => ({ ...image, sourceImageId: undefined,
+        generatedTaskId: id, naturalWidth: pieces[index].width, naturalHeight: pieces[index].height,
+      })), 'imageSplit', label, current, 'png');
+      const task: CanvasTask = { id, status: 'completed', createdAt: new Date().toISOString(),
+        thumbnailUrl: results[0].url, resultIds: results.map(image => image.id),
+        resultFiles: results.map(image => ({ id: image.id, name: image.name, thumbnailUrl: image.url })) };
+      const next = [...current, ...results];
+      remember(current);
+      urls.forEach(url => ownedUrls.current.add(url)); committed = true;
+      imageRef.current = next; selectedRef.current = results.map(image => image.id);
+      setImages(next); setSelectedIds(selectedRef.current);
+      setTasks(previous => [task, ...previous]); closeSplit();
+      if (canvas.current) revealFusion(results[0]);
+    } finally {
+      if (!committed) urls.forEach(url => URL.revokeObjectURL(url));
+      splitSubmitting.current = false;
+    }
+  }
+
   async function openReferenceGuide(editorId: string, reference: FusionReference) {
     const epoch = ++guideOpenEpoch.current;
     const owner = imageRef.current.find(item => item.id === editorId && isReferenceOnlyFusion(item.fusion));
@@ -1225,7 +1290,7 @@ export default function App() {
             onImageEdit={action => action === 'removeBackground' ? removeSelectedBackgrounds()
               : action === 'smartCutout' ? setCutoutImage(imageRef.current.find(n => !n.generation && selectedRef.current.includes(n.id)) ?? null)
               : action === 'smartCrop' ? openCrop(imageRef.current.find(n => !n.nodeOnly && !n.generation && selectedRef.current.includes(n.id)))
-              : action === 'gridSplit' ? openFusion('gridSplit')
+              : action === 'imageSplit' ? openSplit(imageRef.current.find(n => !n.nodeOnly && !n.generation && selectedRef.current.includes(n.id)))
               : announce(t.noBackend)}
             onAction={action => action === 'batchEdit' ? openBatchEdit() : action === 'multiFlat' ? openMerge(true) : action === 'fusion' || action === 'lingerie' || action === 'directed' || action === 'flat' ? openFusion(action) : action === 'cutout' ? setCutoutImage(imageRef.current.find(n => !n.generation && selectedRef.current.includes(n.id)) ?? null) : action === 'removeBackground' ? removeSelectedBackgrounds() : action === 'mergeImages' ? openMerge() : announce(t.noBackend)} onDownload={() => void downloadSelected()} />
         </div>}
@@ -1330,6 +1395,8 @@ export default function App() {
       const [result] = fileNamer.assign([output], 'cutout', t.cutout, imageRef.current, 'png');
       remember(imageRef.current); setImages(previous => centerAddedFusionBranches(previous, [...previous, result])); setSelectedIds([result.id]); setCutoutImage(null);
     }} />}
+    {shownSplit.value && <ImageSplitEditor key={`${shownSplit.value.id}:${shownSplit.value.url}`} source={shownSplit.value} locale={locale}
+      phase={shownSplit.phase} onClose={closeSplit} onApply={(pieces, _grid, signal) => applyImageSplit(shownSplit.value!, pieces, signal)} />}
     {shownCrop.value && <CropEditor key={`${shownCrop.value.id}:${shownCrop.value.url}`} source={shownCrop.value} locale={locale} phase={shownCrop.phase} onClose={closeCrop} onApply={async (result, signal) => {
       const opened = shownCrop.value!, epoch = cropEpoch.current;
       const currentSource = () => !signal.aborted && epoch === cropEpoch.current && cropSource.current?.id === opened.id
