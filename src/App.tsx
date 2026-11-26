@@ -1413,7 +1413,7 @@ export default function App() {
         const [placed] = createImageResults(imageRef.current, [{ sourceId: source.id, sourceUrl: source.url,
           name: source.name, url, width, height: width * result.height / result.width }]);
         if (!placed) throw new DOMException('Crop source is no longer available', 'AbortError');
-        const output: CanvasImage = { ...placed, sourceImageId: undefined,
+        const output: CanvasImage = { ...placed,
           naturalWidth: result.width, naturalHeight: result.height };
         const label = locale === 'en' ? 'Smart crop' : locale === 'ja' ? 'スマートトリミング' : '智能裁图';
         const extension = result.blob.type === 'image/jpeg' ? 'jpg' : 'png';

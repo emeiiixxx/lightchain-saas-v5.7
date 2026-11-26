@@ -10,6 +10,7 @@ import {
 } from '../crop-presets';
 import '../crop-preset-panel.css';
 import { commerceCropPresets } from '../commerce-crop-presets';
+import { MAX_CROP_OUTPUT_PIXELS } from '../image-crop';
 
 export type { CropPreset } from '../crop-presets';
 
@@ -29,6 +30,12 @@ const presetDimensionLimitCopy = {
   'zh-CN': `宽高须为 ${MIN_CUSTOM_CROP_PRESET_EDGE}–${DEMO_MAX_CUSTOM_CROP_PRESET_EDGE}px，请重新输入`,
   en: `Width and height must be ${MIN_CUSTOM_CROP_PRESET_EDGE}–${DEMO_MAX_CUSTOM_CROP_PRESET_EDGE}px. Please enter valid values.`,
   ja: `幅と高さは${MIN_CUSTOM_CROP_PRESET_EDGE}〜${DEMO_MAX_CUSTOM_CROP_PRESET_EDGE}pxで入力してください。`,
+};
+
+const presetPixelLimitCopy = {
+  'zh-CN': '图片尺寸过大，请减小宽度或高度',
+  en: 'Image dimensions are too large. Reduce the width or height.',
+  ja: '画像サイズが大きすぎます。幅または高さを小さくしてください。',
 };
 
 const groups = [
@@ -70,16 +77,16 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
   const [customPresets, setCustomPresets] = useState(readCustomCropPresets);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(() => customPresets.length > 0 ? 'custom' : 'general');
   const [draft, setDraft] = useState<PresetDraft | null>(null);
-  const [formError, setFormError] = useState<'invalid' | 'outOfRange' | null>(null);
+  const [formError, setFormError] = useState<'invalid' | 'outOfRange' | 'tooManyPixels' | null>(null);
   const [moreId, setMoreId] = useState<string | null>(null);
   const widthInput = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const groupBeforeAdding = useRef<string | null>(null);
-  const addingPreset = draft?.id === null;
+  const groupBeforeDraft = useRef<string | null>(null);
+  const hasDraft = draft !== null;
   const validWidth = draft ? positiveInteger(draft.width) : null, validHeight = draft ? positiveInteger(draft.height) : null;
-  const widthError = Boolean(formError && (!validWidth || dimensionOutOfRange(validWidth)));
-  const heightError = Boolean(formError && (!validHeight || dimensionOutOfRange(validHeight)));
+  const widthError = Boolean(formError && (formError === 'tooManyPixels' || !validWidth || dimensionOutOfRange(validWidth)));
+  const heightError = Boolean(formError && (formError === 'tooManyPixels' || !validHeight || dimensionOutOfRange(validHeight)));
   const formErrorId = `${instanceId}-dimension-error`;
   const customExpanded = expandedGroup === 'custom', customBodyId = `${instanceId}-custom`;
 
@@ -94,19 +101,19 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
       if (selectedId.startsWith('custom:')) {
         const selected = next.find(preset => preset.id === selectedId);
         const previous = customPresets.find(preset => preset.id === selectedId);
-        if (!selected) { onSelect(FREE_CROP_PRESET); setExpandedGroup('general'); }
+        if (!selected) { onSelect(FREE_CROP_PRESET); setExpandedGroup(hasDraft ? 'custom' : 'general'); }
         else if (selected.outputWidth !== previous?.outputWidth || selected.outputHeight !== previous?.outputHeight) onSelect(selected);
       }
     };
     window.addEventListener('storage', sync);
     window.addEventListener(CROP_PRESETS_CHANGED_EVENT, sync);
     return () => { window.removeEventListener('storage', sync); window.removeEventListener(CROP_PRESETS_CHANGED_EVENT, sync); };
-  }, [instanceId, selectedId, onSelect, customPresets]);
+  }, [instanceId, selectedId, onSelect, customPresets, hasDraft]);
 
   useEffect(() => { if (draft && customExpanded) widthInput.current?.focus(); }, [draft?.id, Boolean(draft), customExpanded]);
 
   useEffect(() => {
-    if (!addingPreset) return;
+    if (!hasDraft) return;
     const cancelOnBlank = (event: PointerEvent) => {
       if (event.button !== 0 || !(event.target instanceof Element)) return;
       const target = event.target;
@@ -115,23 +122,24 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
       // Disabled options are still controls, not blank space. Keep the draft
       // when they are clicked, and leave crop dragging and zoom controls alone.
       if (target.closest('button, a, input, textarea, select, [role="button"], [role="menu"], [contenteditable="true"], .crop-custom-preset, .crop-editor-image')) return;
-      setDraft(null); setFormError(null); setExpandedGroup(groupBeforeAdding.current); onNotice('');
+      cancelDraft();
     };
     document.addEventListener('pointerdown', cancelOnBlank, true);
     return () => document.removeEventListener('pointerdown', cancelOnBlank, true);
-  }, [addingPreset, onNotice]);
+  }, [hasDraft, customPresets.length, onNotice]);
 
   function cancelDraft() {
-    if (addingPreset) setExpandedGroup(groupBeforeAdding.current);
+    const previousGroup = groupBeforeDraft.current;
+    setExpandedGroup(previousGroup === 'custom' && customPresets.length === 0 ? 'general' : previousGroup);
     setDraft(null); setFormError(null); onNotice('');
   }
   function selectPreset(preset: CropPreset) {
-    if (addingPreset) return;
+    if (hasDraft) return;
     setMoreId(null);
     onSelect(preset);
   }
   function toggleGroup(group: string) {
-    if (addingPreset) return;
+    if (hasDraft) return;
     setMoreId(null);
     setExpandedGroup(current => current === group ? null : group);
   }
@@ -140,9 +148,9 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
     saveCustomCropPresets(next, instanceId);
   }
   function beginDraft(preset?: CustomCropPreset) {
-    if (addingPreset) return;
+    if (hasDraft) return;
     if (!preset && customPresets.length >= MAX_CUSTOM_CROP_PRESETS) { onNotice(presetLimitCopy[locale]); return; }
-    if (!preset) groupBeforeAdding.current = expandedGroup;
+    groupBeforeDraft.current = expandedGroup;
     onNotice('');
     setMoreId(null); setFormError(null);
     setExpandedGroup('custom');
@@ -167,6 +175,9 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
     if (dimensionOutOfRange(validWidth) || dimensionOutOfRange(validHeight)) {
       setFormError('outOfRange'); return;
     }
+    if (validWidth * validHeight > MAX_CROP_OUTPUT_PIXELS) {
+      setFormError('tooManyPixels'); return;
+    }
     const duplicate = customPresets.find(preset => preset.id !== draft.id && preset.outputWidth === validWidth && preset.outputHeight === validHeight);
     const editingExisting = draft.id && customPresets.some(item => item.id === draft.id);
     if (!editingExisting && !duplicate && customPresets.length >= MAX_CUSTOM_CROP_PRESETS) { onNotice(presetLimitCopy[locale]); return; }
@@ -179,7 +190,7 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
     setDraft(null); setFormError(null); setExpandedGroup('custom'); onSelect(preset);
   }
   function removePreset(preset: CustomCropPreset) {
-    if (addingPreset) return;
+    if (hasDraft) return;
     onNotice('');
     setMoreId(null);
     updatePresets(customPresets.filter(item => item.id !== preset.id));
@@ -206,7 +217,7 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
         <Button variant="primary" type="submit" disabled={!validWidth || !validHeight}>{t.confirm}</Button>
       </div>
     </div>
-    {formError && <p id={formErrorId} className="crop-preset-error" role="alert">{formError === 'outOfRange' ? presetDimensionLimitCopy[locale] : t.invalid}</p>}
+    {formError && <p id={formErrorId} className="crop-preset-error" role="alert">{formError === 'outOfRange' ? presetDimensionLimitCopy[locale] : formError === 'tooManyPixels' ? presetPixelLimitCopy[locale] : t.invalid}</p>}
   </form>;
 
   return <aside ref={panelRef} className="crop-preset-panel" aria-label={t.title} data-node-id="8:641" lang={locale}>
@@ -215,16 +226,16 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
     </header>
     <div className="crop-preset-scroll" inert={busy}>
       {(draft || customPresets.length > 0) && <section className="crop-preset-group crop-custom-presets" aria-label={t.custom} data-expanded={customExpanded} data-node-id="26:2478">
-        <Button className="crop-preset-accordion" disabled={addingPreset} aria-expanded={customExpanded} aria-controls={customBodyId} onClick={() => toggleGroup('custom')}>
+        <Button className="crop-preset-accordion" disabled={hasDraft} aria-expanded={customExpanded} aria-controls={customBodyId} onClick={() => toggleGroup('custom')}>
           <span>{t.custom}</span><PresetIcon name={customExpanded ? 'chevron-down' : 'chevron-right'} size={16} />
         </Button>
         <div id={customBodyId} className="crop-preset-group-body" aria-hidden={!customExpanded} inert={!customExpanded}>
           <div className="crop-preset-group-clip"><div className="crop-preset-options crop-custom-preset-list">
           {draft && !draft.id && form}
           {customPresets.map(preset => draft?.id === preset.id ? <div key={preset.id}>{form}</div> :
-            <div key={preset.id} className="crop-custom-preset" data-selected={selectedId === preset.id} data-menu-open={moreId === preset.id} data-disabled={addingPreset || undefined}>
-              <Button className="crop-custom-preset-select" disabled={addingPreset} aria-pressed={selectedId === preset.id} onClick={() => selectPreset(preset)}><span>{preset.label}</span></Button>
-              {!addingPreset && <ToolbarHoverMenu label={t.more} icon={<PresetIcon name="more" size={16} />} iconOnly openOnHover={false} chevron={null} group={instanceId} nodeId="32:4006"
+            <div key={preset.id} className="crop-custom-preset" data-selected={selectedId === preset.id} data-menu-open={moreId === preset.id} data-disabled={hasDraft || undefined}>
+              <Button className="crop-custom-preset-select" disabled={hasDraft} aria-pressed={selectedId === preset.id} onClick={() => selectPreset(preset)}><span>{preset.label}</span></Button>
+              {!hasDraft && <ToolbarHoverMenu label={t.more} icon={<PresetIcon name="more" size={16} />} iconOnly openOnHover={false} chevron={null} group={instanceId} nodeId="32:4006"
                 className="crop-preset-more-control" open={moreId === preset.id} onOpenChange={value => setMoreId(current => value ? preset.id : current === preset.id ? null : current)}
                 items={[
                   { label: t.edit, icon: <span className="crop-preset-menu-icon-slot"><PresetIcon name="edit" size={16} /></span>, onSelect: () => beginDraft(preset) },
@@ -238,13 +249,13 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
         const expanded = expandedGroup === group.id;
         const bodyId = `${instanceId}-${group.id}`;
         return <section className="crop-preset-group" key={group.id} data-expanded={expanded}>
-          <Button className="crop-preset-accordion" disabled={addingPreset} aria-expanded={expanded} aria-controls={bodyId} onClick={() => toggleGroup(group.id)}>
+          <Button className="crop-preset-accordion" disabled={hasDraft} aria-expanded={expanded} aria-controls={bodyId} onClick={() => toggleGroup(group.id)}>
             <span>{t[group.id]}</span><PresetIcon name={expanded ? 'chevron-down' : 'chevron-right'} size={16} />
           </Button>
           <div id={bodyId} className="crop-preset-group-body" aria-hidden={!expanded} inert={!expanded}>
             <div className="crop-preset-group-clip"><div className="crop-preset-options">
               {group.id === 'commerce' ? commerceCropPresets(locale).map(preset =>
-                <Button className="crop-preset-option crop-commerce-option" disabled={addingPreset} key={preset.id} aria-pressed={selectedId === preset.id} onClick={() => selectPreset(preset)}>
+                <Button className="crop-preset-option crop-commerce-option" disabled={hasDraft} key={preset.id} aria-pressed={selectedId === preset.id} onClick={() => selectPreset(preset)}>
                   <PresetIcon name={`ratio-${preset.ratioLabel!.replace(':', '-')}`} />
                   <span className="crop-commerce-option-copy"><span>{preset.label} · {preset.ratioLabel}</span>
                     <span className="crop-commerce-dimensions">{preset.outputWidth}×{preset.outputHeight} px</span>
@@ -252,7 +263,7 @@ export function CropPresetPanel({ locale, selectedId, onSelect, submitDisabled, 
                 </Button>
               ) : group.ratios.map(ratio => {
                 const preset = ratioPreset(group.id, ratio);
-                return <Button className="crop-preset-option" disabled={addingPreset} key={ratio} aria-pressed={selectedId === preset.id} onClick={() => selectPreset(preset)}>
+                return <Button className="crop-preset-option" disabled={hasDraft} key={ratio} aria-pressed={selectedId === preset.id} onClick={() => selectPreset(preset)}>
                   <PresetIcon name={ratio === 'free' ? 'free' : `ratio-${ratio.replace(':', '-')}`} />
                   <span>{ratio === 'free' ? t.free : ratio}</span>
                 </Button>;

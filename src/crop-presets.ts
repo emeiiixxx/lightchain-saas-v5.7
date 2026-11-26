@@ -7,8 +7,8 @@ export type CustomCropPreset = CropPreset & { outputWidth: number; outputHeight:
 export const FREE_CROP_PRESET: CropPreset = { id: 'free', label: '自由', ratio: null };
 export const MAX_CUSTOM_CROP_PRESETS = 5;
 export const MIN_CUSTOM_CROP_PRESET_EDGE = 100;
-// Demo-only upper limit; the production maximum awaits development confirmation.
-export const DEMO_MAX_CUSTOM_CROP_PRESET_EDGE = 9000;
+// Custom presets also validate the crop encoder's total-pixel limit before saving.
+export const DEMO_MAX_CUSTOM_CROP_PRESET_EDGE = 10000;
 export const CROP_PRESETS_STORAGE_KEY = 'lc-v57-crop-presets';
 export const CROP_PRESETS_CHANGED_EVENT = 'lc-v57-crop-presets-changed';
 

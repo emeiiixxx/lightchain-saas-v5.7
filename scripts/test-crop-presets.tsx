@@ -126,6 +126,60 @@ test('cancel and Escape discard unsaved edits; unconfirmed values cannot submit 
   assert.equal(button(app.host, '开始 AI 生成').disabled, false);
 });
 
+test('editing locks other presets and only blank canvas space cancels the unfinished draft', async () => {
+  const app = await mount();
+  app.host.classList.add('crop-editor');
+  await add(app.host, '1200', '800');
+  await add(app.host, '600', '900');
+  const selectedBefore = app.selected.id;
+  const savedBefore = readCustomCropPresets();
+  const canvasImage = document.createElement('div'); canvasImage.className = 'crop-editor-image';
+  const zoomControl = document.createElement('button'); zoomControl.textContent = 'Zoom';
+  const canvasBlank = document.createElement('div'); canvasBlank.className = 'crop-editor-stage';
+  app.host.append(canvasImage, zoomControl, canvasBlank);
+  await action(app.host, '1200*800', '编辑');
+  await fill(app.host, 'width', '10001');
+  await click(button(app.host, '确认'));
+  assert.ok(app.host.querySelector('[role="alert"]'));
+  for (const label of ['自定义预设 (px)', '通用', '电商商品图', '600*900', '自由']) {
+    assert.equal(button(app.host, label).disabled, true, label);
+  }
+  assert.equal(app.host.querySelector('.crop-preset-more-control'), null);
+  for (const target of [canvasImage, zoomControl, button(app.host, '通用'), button(app.host, '600*900')]) {
+    await act(async () => { target.dispatchEvent(new dom.window.MouseEvent('pointerdown', { bubbles: true, button: 0 })); });
+    assert.equal(dimension(app.host, 'width'), '10001', 'controls and crop image must retain the draft');
+  }
+  await act(async () => { canvasBlank.dispatchEvent(new dom.window.MouseEvent('pointerdown', { bubbles: true, button: 0 })); });
+  assert.equal(app.host.querySelector('form'), null);
+  assert.equal(app.host.querySelector('[role="alert"]'), null);
+  assert.deepEqual(readCustomCropPresets(), savedBefore);
+  assert.equal(app.selected.id, selectedBefore);
+  assert.equal(button(app.host, '自定义预设 (px)').getAttribute('aria-expanded'), 'true');
+  assert.equal(button(app.host, '通用').disabled, false);
+  assert.equal(button(app.host, '600*900').disabled, false);
+  assert.ok(app.host.querySelector('.crop-preset-more-control'));
+  await action(app.host, '1200*800', '编辑');
+  assert.equal(dimension(app.host, 'width'), '1200');
+  assert.equal(button(app.host, '锁定宽高比').getAttribute('aria-pressed'), 'false');
+  await click(button(app.host, '取消'));
+  assert.equal(button(app.host, '通用').disabled, false);
+});
+
+test('confirming an edited preset keeps its identity and restores other preset controls', async () => {
+  const app = await mount();
+  await add(app.host, '1200', '800');
+  const id = app.selected.id;
+  await action(app.host, '1200*800', '编辑');
+  await fill(app.host, 'width', '1500');
+  await click(button(app.host, '确认'));
+  assert.equal(app.selected.id, id);
+  assert.equal(app.selected.outputWidth, 1500);
+  assert.equal(app.host.querySelector('form'), null);
+  assert.equal(button(app.host, '通用').disabled, false);
+  assert.ok(button(app.host, '更多'));
+  assert.deepEqual(readCustomCropPresets().map(preset => [preset.id, preset.outputWidth, preset.outputHeight]), [[id, 1500, 800]]);
+});
+
 test('locked width and height follow the captured ratio in both directions; unlocking separates them', async () => {
   const app = await mount();
   await click(button(app.host, '添加自定义预设'));
@@ -151,6 +205,64 @@ test('empty, zero, non-integer and unsafe integer values never save a preset', a
   }
   await fill(app.host, 'width', '001200'); await click(button(app.host, '确认'));
   assert.equal(app.selected.outputWidth, 1200);
+});
+
+test('custom presets accept 100–10000px edges when the output has at most 64 million pixels', async () => {
+  const app = await mount();
+  for (const [width, height] of [[100, 100], [1200, 10000], [6000, 10000], [8000, 8000]]) {
+    await add(app.host, String(width), String(height));
+    assert.equal(app.host.querySelector('form'), null);
+    assert.equal(app.selected.outputWidth, width);
+    assert.equal(app.selected.outputHeight, height);
+  }
+  assert.equal(readCustomCropPresets().length, 4);
+});
+
+test('confirm rejects excessive total pixels without saving or losing input, then accepts a corrected size', async () => {
+  const app = await mount();
+  await click(button(app.host, '添加自定义预设'));
+  for (const [width, height] of [[9000, 9000], [10000, 10000]]) {
+    await fill(app.host, 'width', String(width));
+    await fill(app.host, 'height', String(height));
+    assert.equal(app.host.querySelector('[role="alert"]'), null);
+    assert.equal(button(app.host, '确认').disabled, false);
+    await click(button(app.host, '确认'));
+    assert.equal(app.host.querySelector('[role="alert"]')?.textContent, '图片尺寸过大，请减小宽度或高度');
+    assert.equal(dimension(app.host, 'width'), String(width));
+    assert.equal(dimension(app.host, 'height'), String(height));
+    assert.equal(app.host.querySelectorAll('input[aria-invalid="true"]').length, 2);
+    assert.deepEqual(readCustomCropPresets(), []);
+  }
+  await fill(app.host, 'width', '6000');
+  assert.equal(app.host.querySelector('[role="alert"]'), null);
+  assert.equal(app.host.querySelectorAll('input[aria-invalid="true"]').length, 0);
+  await click(button(app.host, '确认'));
+  assert.deepEqual(readCustomCropPresets().map(preset => [preset.outputWidth, preset.outputHeight]), [[6000, 10000]]);
+});
+
+test('editing and locked dimensions use the same edge and total-pixel validation', async () => {
+  const app = await mount();
+  await add(app.host, '8000', '8000');
+  const original = readCustomCropPresets();
+  await action(app.host, '8000*8000', '编辑');
+  for (const value of ['99', '10001']) {
+    await fill(app.host, 'width', value);
+    await click(button(app.host, '确认'));
+    assert.equal(app.host.querySelector('[role="alert"]')?.textContent, '宽高须为 100–10000px，请重新输入');
+    assert.equal(app.host.querySelectorAll('input[aria-invalid="true"]').length, 1);
+    assert.deepEqual(readCustomCropPresets(), original);
+  }
+  await fill(app.host, 'width', '8000');
+  await click(button(app.host, '锁定宽高比'));
+  await fill(app.host, 'width', '9000');
+  assert.equal(dimension(app.host, 'height'), '9000');
+  await click(button(app.host, '确认'));
+  assert.equal(app.host.querySelector('[role="alert"]')?.textContent, '图片尺寸过大，请减小宽度或高度');
+  assert.deepEqual(readCustomCropPresets(), original);
+  await fill(app.host, 'width', '8000');
+  await click(button(app.host, '确认'));
+  assert.equal(app.host.querySelector('form'), null);
+  assert.deepEqual(readCustomCropPresets(), original);
 });
 
 test('locking cannot silently keep an outdated dimension when the calculated integer overflows', async () => {
@@ -202,6 +314,7 @@ test('a draft remains editable after its saved preset is deleted in another wind
   await action(app.host, '1200*800', '编辑'); await fill(app.host, 'width', '1600');
   await externalPresets([]);
   assert.ok(app.host.querySelector('form'), 'keep the unfinished form instead of leaving add and generate disabled');
+  assert.equal(button(app.host, '自定义预设 (px)').getAttribute('aria-expanded'), 'true', 'external deletion must not hide a locked editing form');
   assert.equal(dimension(app.host, 'width'), '1600');
   await click(button(app.host, '确认'));
   assert.equal(app.selected.outputWidth, 1600); assert.equal(readCustomCropPresets().length, 1);

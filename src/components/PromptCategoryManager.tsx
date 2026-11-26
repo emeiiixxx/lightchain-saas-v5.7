@@ -41,7 +41,8 @@ export function PromptCategoryManager({ categories, locale, phase, onClose, onSa
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState('');
-  const sorting = usePromptCategorySort(shown, setShown, busy || phase === 'exit');
+  const tagsDisabled = busy || adding || phase === 'exit';
+  const sorting = usePromptCategorySort(shown, setShown, tagsDisabled);
   const list = sorting.list;
   const actions = useRef<HTMLElement>(null);
   const form = useRef<HTMLDivElement>(null);
@@ -106,12 +107,12 @@ export function PromptCategoryManager({ categories, locale, phase, onClose, onSa
       <span id={sortHelpId} className="prompt-category-manager-sr-only">{sortingCopy[locale].help}</span>
       <div ref={list} className="prompt-category-manager-list" style={{ minHeight: sorting.minHeight }} onDragEnter={sorting.enter} onDragOver={sorting.over} onDrop={sorting.drop}>
         {shown.map((category, index) => <div key={category} className="prompt-category-manager-item" data-category-id={category}
-          role="group" tabIndex={busy ? -1 : 0} aria-label={`${promptCategoryLabel(category, locale)} · ${sorting.order.indexOf(category) + 1}/${shown.length}`} aria-describedby={sortHelpId}
-          data-sortable={!busy && shown.length > 1} data-dragging={sorting.dragging === category}
+          role="group" tabIndex={tagsDisabled ? -1 : 0} aria-disabled={tagsDisabled || undefined} aria-label={`${promptCategoryLabel(category, locale)} · ${sorting.order.indexOf(category) + 1}/${shown.length}`} aria-describedby={tagsDisabled ? undefined : sortHelpId}
+          data-sortable={!tagsDisabled && shown.length > 1} data-dragging={sorting.dragging === category}
           style={{ order: sorting.order.indexOf(category) }}
-          draggable={!busy && shown.length > 1} onPointerDownCapture={sorting.prepare}
+          draggable={!tagsDisabled && shown.length > 1} onPointerDownCapture={sorting.prepare}
           onDragStart={event => sorting.begin(event, category)} onDragEnd={sorting.end} onKeyDown={event => sorting.keyDown(event, category)}>
-        <TagChip size="m" appearance="outline" disabled={busy || adding} title={`${promptCategoryLabel(category, locale)} · ${sortingCopy[locale].label}`}
+        <TagChip size="m" appearance="outline" disabled={tagsDisabled} title={tagsDisabled ? promptCategoryLabel(category, locale) : `${promptCategoryLabel(category, locale)} · ${sortingCopy[locale].label}`}
           trailing={<Button className="prompt-category-manager-remove" disabled={busy || adding} draggable={false} aria-label={`${t.remove} · ${promptCategoryLabel(category, locale)}`} title={t.remove} onClick={() => { if (busyRef.current || adding) return; nextFocus.current = index; setShown(previous => previous.filter(item => item !== category)); setError(''); }}><Icon name="promptCategoryRemove" size={16}/></Button>}>
           {promptCategoryLabel(category, locale)}
         </TagChip></div>)}

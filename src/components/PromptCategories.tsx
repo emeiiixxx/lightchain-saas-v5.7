@@ -87,6 +87,9 @@ export function PromptCategoryField({ categories, value, locale, onChange, disab
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
+  // Keep the automatic fallback separate from a user's explicit category choice.
+  // This field lives for the parent draft, including repeated manager dialogs.
+  const removedSelection = useRef<{ category: string; overridden: boolean } | null>(null);
   const addingCallback = useRef(onAddingChange);
   addingCallback.current = onAddingChange;
   useLayoutEffect(() => {
@@ -104,6 +107,12 @@ export function PromptCategoryField({ categories, value, locale, onChange, disab
     return () => confirmationCallback.current?.(false);
   }, [confirmationActive]);
   const selected = categories.includes(normalizePromptCategory(value)) ? normalizePromptCategory(value) : 'all';
+  useEffect(() => {
+    const removed = removedSelection.current;
+    if (busy || !removed || !categories.includes(removed.category)) return;
+    removedSelection.current = null;
+    if (!removed.overridden && normalizePromptCategory(value) === 'all') onChange(removed.category);
+  }, [categories, value, onChange, busy]);
   const blocked = disabled || busy;
   const actionSize = size === 's' ? 'xs' : size === 'l' ? 'm' : 's';
   const close = () => { setAdding(false); setName(''); setError(''); requestAnimationFrame(() => field.current?.querySelector<HTMLButtonElement>('.prompt-category-add')?.focus({ preventScroll: true })); };
@@ -111,7 +120,10 @@ export function PromptCategoryField({ categories, value, locale, onChange, disab
     if (getCustomPromptCategoryCount(categories) >= MAX_CUSTOM_PROMPT_CATEGORIES) { setError(t.limitReachedWithManager); return; }
     setError(''); setName(''); setAdding(true);
   };
-  const choose = (category: string) => { onChange(category); if (adding) close(); else setError(''); };
+  const choose = (category: string) => {
+    if (removedSelection.current) removedSelection.current.overridden = true;
+    onChange(category); if (adding) close(); else setError('');
+  };
   const confirm = async (): Promise<CategorySelectionResult> => {
     if (busyRef.current || blocked) return { ok: false, message: t.failed };
     const category = resolveCustomPromptCategory(name, categories, locale);
@@ -123,7 +135,10 @@ export function PromptCategoryField({ categories, value, locale, onChange, disab
     try {
       const result = await onCreateCategory(name);
       if (!result.ok) { setError(result.message); return result; }
-      onChange(result.category); setName(''); setError(''); setAdding(false);
+      const removed = removedSelection.current;
+      removedSelection.current = null;
+      if (!removed?.overridden || removed.category !== result.category) onChange(result.category);
+      setName(''); setError(''); setAdding(false);
       requestAnimationFrame(() => field.current?.querySelector<HTMLButtonElement>('.prompt-category-add')?.focus({ preventScroll: true }));
       return result;
     } catch { setError(t.failed); return { ok: false, message: t.failed }; }
@@ -146,7 +161,13 @@ export function PromptCategoryField({ categories, value, locale, onChange, disab
     {error && <p className="prompt-category-error" role="alert">{error}</p>}
     {management.value && onManageCategories && <PromptCategoryManager categories={categories} locale={locale} phase={management.phase} onClose={() => setManagementOpen(false)} onSave={async changes => {
       const result = await onManageCategories(changes);
-      if (result.ok) { if (changes.deleted.includes(selected)) onChange('all'); setError(''); }
+      if (result.ok) {
+        if (changes.deleted.includes(selected)) {
+          removedSelection.current = { category: selected, overridden: false };
+          onChange('all');
+        }
+        setError('');
+      }
       return result;
     }}/>}
   </div>;
