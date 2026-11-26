@@ -1,15 +1,13 @@
-import { canvasMediaDisplayName } from '../../canvas-media-filename';
 import { DownloadFormatMenu } from './DownloadFormatMenu';
 import { exportImage, type DownloadFormat } from '../download-image';
 import { prepareMainImage } from '../asset-library';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { GenerationRecord } from './CanvasLeftPanel';
 import { useLocale } from '../LocaleContext';
 import type { Notify } from '../notification';
 import { demoNotice } from '../demo-feedback';
 import { Button, Divider, Icon } from './ui';
-import { TaskResultPlaceholder } from './TaskResultPlaceholder';
-import { ProgressiveImage } from './ProgressiveImage';
+import { TaskResultThumbnail } from './TaskResultThumbnails';
 import { GenerationRecordTags } from './GenerationRecordTags';
 import { recordHasPrompt, recordHasPromptActions } from '../generation-record-display';
 import { ElementSendMenu } from './ElementSendMenu';
@@ -27,6 +25,7 @@ type Props = {
 export function TaskDetailPanel({ record, selectedIndex, active, onSelect, onLibrary, onSave, onCopy, onNotify, onRegenerate, onDeleteImage, getResultName }: Props) {
   const { t, locale } = useLocale();
   const aspectRatio = useRecordResultRatio(record);
+  const thumbnails = useRef<HTMLElement>(null);
   const [sendOpen, setSendOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -40,6 +39,15 @@ export function TaskDetailPanel({ record, selectedIndex, active, onSelect, onLib
     return () => window.removeEventListener('pointerdown', outside);
   }, [sendOpen, downloadOpen]);
   useEffect(() => { setSendOpen(false); setDownloadOpen(false); }, [selectedIndex, active]);
+  useLayoutEffect(() => {
+    const list = thumbnails.current;
+    const selected = list?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!active || !list || !selected) return;
+    // Keep navigation inside the thumbnail scroller; do not move the image stage.
+    const top = selected.offsetTop, bottom = top + selected.offsetHeight;
+    if (top < list.scrollTop) list.scrollTop = top;
+    else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
+  }, [record.id, record.images.length, selectedIndex, active, aspectRatio]);
   const selected = record.images[selectedIndex];
   const disabled = !selected || selected.status === 'failed' || selected.status === 'generating';
   const unavailable = () => onNotify(demoNotice(locale));
@@ -57,8 +65,11 @@ export function TaskDetailPanel({ record, selectedIndex, active, onSelect, onLib
   return <aside className="task-detail-panel" data-task-controls aria-label={locale === 'en' ? 'Task details' : locale === 'ja' ? 'タスク詳細' : '任务详情'}>
     <div className="task-detail-info">
       <header><div className="task-detail-heading-text"><h2>{t(record.title)}</h2><time>{record.time}</time></div>{record.replayable && <Button className="task-detail-regenerate" variant="outline" size="s" disabled={disabled || record.generating || record.pending} onClick={onRegenerate}><Icon name="task-record-regenerate-small" size={16} />{t('再次生成')}</Button>}</header>
-      <nav className="task-detail-thumbnails" aria-label={t('图片缩略图')}>
-        {record.images.map((image, index) => <button type="button" key={`${image.url}-${index}`} style={{ aspectRatio }} aria-label={`${t('查看大图')} · ${index + 1}`} data-tooltip={image.status === 'failed' || image.status === 'generating' ? undefined : canvasMediaDisplayName(getResultName(index))} data-tooltip-position="pointer-stationary" disabled={image.status === 'failed' || image.status === 'generating'} aria-current={index === selectedIndex ? 'true' : undefined} onClick={() => onSelect(index)} onKeyDown={event => {
+      <nav ref={thumbnails} className="task-detail-thumbnails" aria-label={t('图片缩略图')}>
+        <div className="task-detail-thumbnail-grid">
+        {record.images.map((image, index) => <TaskResultThumbnail key={image.id ?? `${image.url}-${index}`} image={image} index={index}
+          name={getResultName(index)} aspectRatio={aspectRatio} current={index === selectedIndex} eager={active && index === selectedIndex}
+          onSelect={() => onSelect(index)} onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
           event.preventDefault(); event.stopPropagation();
           const step = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : event.key === 'ArrowUp' ? -4 : 4;
@@ -67,8 +78,9 @@ export function TaskDetailPanel({ record, selectedIndex, active, onSelect, onLib
           const next = event.key === 'Home' ? available[0] : event.key === 'End' ? available.at(-1)
             : step > 0 ? available.find(i => i >= target) : [...available].reverse().find(i => i <= target);
           if (next === undefined) return;
-          onSelect(next); event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('button')[next]?.focus();
-        }}>{image.status === 'failed' || image.status === 'generating' ? <TaskResultPlaceholder status={image.status} /> : <ProgressiveImage src={image.url} alt="" eager fit="contain" />}</button>)}
+          onSelect(next); event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('button')[next]?.focus({ preventScroll: true });
+        }} />)}
+        </div>
       </nav>
       <GenerationRecordTags record={record} active={active && !disabled} disabled={disabled} />
       {recordHasPrompt(record) && <div className="generation-record-prompt task-detail-prompt">

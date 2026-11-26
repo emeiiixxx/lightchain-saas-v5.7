@@ -1,0 +1,14 @@
+.generation-record-result-open.task-record-view-all {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 0;
+  padding: 4px;
+  white-space: normal;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 20px;
+}

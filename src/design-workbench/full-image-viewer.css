@@ -35,14 +35,17 @@
 .task-detail-regenerate { flex: none; height: 32px; min-width: 32px; padding-inline: 12px; gap: 4px; }
 .task-detail-info h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; overflow-wrap: anywhere; }
 .task-detail-info time { font-size: 12px; line-height: 16px; font-weight: 400; color: var(--text-tertiary); }
-.task-detail-thumbnails { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: start; gap: 8px; }
-.task-detail-thumbnails > button { display: block; width: 100%; padding: 0; overflow: hidden; border: 2px solid transparent; border-radius: var(--radius-l); background: var(--surface-default); }
-.task-detail-thumbnails > button[aria-current='true'] { border-color: var(--border-brand); }
+.task-detail-info > .task-detail-thumbnails { flex: 0 1 auto; }
+.task-detail-thumbnails { position: relative; min-height: 0; max-height: 480px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+/* Only the viewport is height-limited; grid rows keep their image-ratio height. */
+.task-detail-thumbnail-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: start; gap: 8px; }
+.task-detail-thumbnail-grid > button { display: block; width: 100%; padding: 0; overflow: hidden; border: 2px solid transparent; border-radius: var(--radius-l); background: var(--surface-default); }
+.task-detail-thumbnail-grid > button[aria-current='true'] { border-color: var(--border-brand); }
 .task-detail-thumbnails .progressive-image { width: 100%; height: 100%; }
 .task-detail-thumbnails .progressive-image, .task-detail-thumbnails .progressive-image > img { border-radius: 0; }
 .task-detail-panel .generation-record-tag { min-height: 32px; border-radius: var(--radius-base); font-size: 14px; line-height: 22px; }
 .task-detail-panel .generation-record-tag--image { padding-left: 2px; }
-.task-detail-panel .generation-tag-thumb, .task-detail-panel .generation-tag-thumb img { width: 28px; height: 28px; border-radius: 6px; }
+.task-detail-panel .generation-record-tag .generation-tag-thumb, .task-detail-panel .generation-record-tag .generation-tag-thumb img { width: 28px; height: 28px; border-radius: 6px; }
 .task-detail-prompt { flex: 0 1 auto; min-height: 0; }
 .task-detail-prompt > p { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; margin: 0; font-size: 14px; line-height: 20px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .task-detail-prompt .generation-record-actions { flex-shrink: 0; flex-wrap: nowrap; }
@@ -60,7 +63,7 @@
 }
 @media (max-width: 680px) {
   .task-detail-panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 40dvh; }
-  .task-detail-thumbnails { grid-template-columns: repeat(4, minmax(0, 64px)); }
+  .task-detail-thumbnail-grid { grid-template-columns: repeat(4, minmax(0, 64px)); }
   .full-image-viewer .task-detail-back { top: 12px; left: 12px; }
 }
 

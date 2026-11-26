@@ -12,9 +12,7 @@ import { usePresence } from '../usePresence';
 import { prepareMainImage, type LibraryImage } from '../asset-library';
 import type { CanvasImage } from '../useCanvas';
 import { Button, Dialog, Divider, Icon, IconButton } from './ui';
-import { ProgressiveImage } from './ProgressiveImage';
-import { TaskResultPlaceholder } from './TaskResultPlaceholder';
-import { GeneratingPlaceholder } from './GeneratingPlaceholder';
+import { TaskRecordResults as RecordResults } from './TaskResultThumbnails';
 import { FullImageViewer } from './FullImageViewer';
 import { createPortal } from 'react-dom';
 import { PromptLibrary, SavePrompt } from './PromptLibrary';
@@ -23,7 +21,6 @@ import { PROMPT_SAVED_TOAST_DURATION_MS, promptSavedMessage } from '../../prompt
 import { TaskRecordMoreMenu } from './TaskRecordMoreMenu';
 import { downloadRecordGroup } from '../download-record-group';
 import type { DownloadFormat } from '../download-image';
-import { useRecordResultRatio } from '../useRecordResultRatio';
 
 export type LeftPanelTab = 'layers' | 'assets' | 'history';
 export type GenerationRecord = {
@@ -44,18 +41,6 @@ export type GenerationRecord = {
   images: { id?: string; url: string; height: number; status?: 'failed' | 'generating' | 'success' }[];
 };
 
-function RecordResults({ record, eager, onOpen, getResultName }: { record: GenerationRecord; eager: boolean; onOpen: (index: number) => void; getResultName: (index: number) => string }) {
-  const { t } = useLocale();
-  const aspectRatio = useRecordResultRatio(record);
-  const count = record.images.length || record.count || 1;
-  return <div className={`generation-record-images ${count >= 4 ? 'generation-record-images--four' : ''}`}>
-    {record.images.length ? record.images.map((item, index) => <div className="generation-record-result" key={item.id ?? `${item.url}-${index}`} style={{ aspectRatio }}>
-      {item.status === 'failed' || item.status === 'generating'
-        ? <TaskResultPlaceholder status={item.status} />
-        : <button className="generation-record-result-open" type="button" aria-label={`${t('查看大图')} · ${t(record.title)} ${index + 1}`} data-tooltip={canvasMediaDisplayName(getResultName(index))} data-tooltip-position="pointer-stationary" onClick={() => onOpen(index)}><ProgressiveImage src={item.url} alt="" eager={eager} fit="contain" /></button>}
-    </div>) : Array.from({ length: count }, (_, index) => <div className="generation-record-loading" key={index} style={{ aspectRatio }}><GeneratingPlaceholder style={{ inset: 0 }} /></div>)}
-  </div>;
-}
 const tabs = [
   { value: 'layers', label: '图层', en: 'Layers', ja: 'レイヤー', icon: 'generation-record-imgDefaultIcon' },
   { value: 'assets', label: '资产', en: 'Assets', ja: '素材', icon: 'generation-record-imgDefaultIcon1' },

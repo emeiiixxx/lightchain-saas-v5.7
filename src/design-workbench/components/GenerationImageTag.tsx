@@ -1,9 +1,10 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePresence } from '../usePresence';
+import { TagChip } from '../../components/TagChip';
 
 // Keep the image bubble within 320px, including its padding.
-export function GenerationImageTag({ src, label, active, disabled = false }: { src: string; label: string; active: boolean; disabled?: boolean }) {
+export function GenerationImageTag({ src, label, active, disabled = false, chip = false }: { src: string; label: string; active: boolean; disabled?: boolean; chip?: boolean }) {
   const anchor = useRef<HTMLButtonElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ratio = useRef(1);
@@ -44,11 +45,12 @@ export function GenerationImageTag({ src, label, active, disabled = false }: { s
   }, [open]);
   useEffect(() => { if (!active) { keepOpen(); setOpen(false); } }, [active]);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-  return <><span className="generation-record-tag generation-record-tag--image">
-    <button disabled={disabled} ref={anchor} type="button" className="generation-tag-thumb" aria-label={label} aria-describedby={open && active ? id : undefined} onMouseEnter={show} onMouseLeave={closeSoon} onFocus={show} onBlur={closeSoon} onClick={show}>
-      <img src={src} width={20} height={20} alt="" onLoad={event => { naturalHeight.current = event.currentTarget.naturalHeight || 1; ratio.current = event.currentTarget.naturalWidth / naturalHeight.current; }} />
-    </button>{label}
-  </span>{shown.value && createPortal(<div id={id} className="generation-tag-preview" data-phase={shown.phase} inert={shown.phase === 'exit'} role="region" aria-label={label} style={{ left: position.left, top: position.top }} onMouseEnter={keepOpen} onMouseLeave={closeSoon}>
+  const thumbnailControl = <button disabled={disabled} ref={anchor} type="button" className="generation-tag-thumb" aria-label={label} aria-describedby={open && active ? id : undefined} onMouseEnter={show} onMouseLeave={closeSoon} onFocus={show} onBlur={closeSoon} onClick={show}>
+    <img src={src} width={20} height={20} alt="" onLoad={event => { naturalHeight.current = event.currentTarget.naturalHeight || 1; ratio.current = event.currentTarget.naturalWidth / naturalHeight.current; }} />
+  </button>;
+  return <>{chip
+    ? <TagChip size="s" appearance="filled" className="generation-image-tag-chip" leading={thumbnailControl}>{label}</TagChip>
+    : <span className="generation-record-tag generation-record-tag--image">{thumbnailControl}{label}</span>}{shown.value && createPortal(<div id={id} className="generation-tag-preview" data-phase={shown.phase} inert={shown.phase === 'exit'} role="region" aria-label={label} style={{ left: position.left, top: position.top }} onMouseEnter={keepOpen} onMouseLeave={closeSoon}>
     <img src={shown.value} alt={label} style={{ maxHeight: position.height }} onLoad={event => { naturalHeight.current = event.currentTarget.naturalHeight || 1; ratio.current = event.currentTarget.naturalWidth / naturalHeight.current; place(); }} />
   </div>, anchor.current?.closest('dialog') ?? document.body)}</>;
 }

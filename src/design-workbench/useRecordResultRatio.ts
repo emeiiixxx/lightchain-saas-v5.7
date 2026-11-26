@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { GenerationRecord } from './components/CanvasLeftPanel';
 
-// Every result in a task shares its output configuration, including state tiles.
+// Shared thumbnail presentation only; never changes result metadata or image pixels.
 export function useRecordResultRatio(record: GenerationRecord) {
   const [width, height] = (record.ratio ?? '').split(':').map(Number);
   const configured = width > 0 && height > 0 ? width / height : undefined;
@@ -21,5 +21,6 @@ export function useRecordResultRatio(record: GenerationRecord) {
     return () => { active = false; image.onload = null; };
   }, [configured, source]);
   const fallbackHeight = result?.height ?? record.resultHeight ?? record.images[0]?.height ?? 92;
-  return configured ?? (decoded?.source === source ? decoded?.ratio : undefined) ?? (fallbackHeight > 0 ? 92 / fallbackHeight : 1);
+  const ratio = configured ?? (decoded?.source === source ? decoded?.ratio : undefined) ?? (fallbackHeight > 0 ? 92 / fallbackHeight : 1);
+  return Math.min(16 / 9, Math.max(9 / 16, ratio));
 }
