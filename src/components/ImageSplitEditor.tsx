@@ -27,10 +27,11 @@ const copy = {
     select: '选择切片', all: '全选', none: '取消全选', output: '每个选中的切片生成一张独立图片',
     loading: '正在读取图片…', loadError: '图片读取失败，请关闭后重试', exporting: '正在切分…', exportError: '图片切分失败，请重试',
     invalid: '请输入大于 0 的整数，行列数不能超过原图像素', limit: `单次最多切分${MAX_SPLIT_CELLS}张，请调整行列数`,
+    addLimit: `单次最多切分${MAX_SPLIT_CELLS}张，请删除分割线或调整行列数后再添加`,
     tooLarge: '部分宫格尺寸过大，请增加分割线后重试',
     spacing: '分割间距不能小于12px（原图像素），请减少行列数',
     addSpacing: '分割线两侧需各保留至少12px（原图像素），当前区域无法继续添加',
-    grid: (c: number, r: number) => `当前${c}×${r}=${c * r}，可拖动分割线，调整为不等分`,
+    grid: '可拖动分割线，调整为不等分',
     count: (total: number, selected: number) => ({ before: `共 ${total} 张 · 已选 `, selected: `${selected} 张`, after: '' }),
     submit: (count: number) => `切分 ${count} 张`, cell: (index: number) => `宫格 ${index}`,
     line: (axis: SplitAxis, index: number) => `${axis === 'x' ? '竖' : '横'}分割线 ${index}`,
@@ -44,10 +45,11 @@ const copy = {
     select: 'Select slices', all: 'Select all', none: 'Deselect all', output: 'Each selected slice becomes a separate image',
     loading: 'Loading image…', loadError: 'Unable to load the image. Close and try again.', exporting: 'Splitting…', exportError: 'Unable to split the image. Try again.',
     invalid: 'Enter positive whole numbers no greater than the image dimensions.', limit: `Split up to ${MAX_SPLIT_CELLS} images at a time. Adjust the rows or columns.`,
+    addLimit: `Split up to ${MAX_SPLIT_CELLS} images at a time. Delete a dividing line or adjust the rows or columns before adding another.`,
     tooLarge: 'Some cells are too large. Add more dividing lines and try again.',
     spacing: 'Divisions must be at least 12 original-image pixels apart. Reduce the rows or columns.',
     addSpacing: 'A new line needs at least 12 original-image pixels on each side. There is not enough space.',
-    grid: (c: number, r: number) => `${c}×${r} = ${c * r}. Drag lines for unequal sizes.`,
+    grid: 'Drag lines for unequal sizes.',
     count: (total: number, selected: number) => ({ before: `${total} slices · `, selected: `${selected} slices`, after: ' selected' }),
     submit: (count: number) => `Split ${count} images`, cell: (index: number) => `Cell ${index}`,
     line: (axis: SplitAxis, index: number) => `${axis === 'x' ? 'Vertical' : 'Horizontal'} line ${index}`,
@@ -61,10 +63,11 @@ const copy = {
     select: '分割画像を選択', all: 'すべて選択', none: 'すべて解除', output: '選択した領域ごとに独立した画像を生成します',
     loading: '画像を読み込み中…', loadError: '画像を読み込めません。閉じてから再試行してください。', exporting: '分割中…', exportError: '画像を分割できませんでした。再試行してください。',
     invalid: '元画像のピクセル数以下の正の整数を入力してください。', limit: `1回に分割できるのは最大${MAX_SPLIT_CELLS}枚です。行数または列数を調整してください。`,
+    addLimit: `1回に分割できるのは最大${MAX_SPLIT_CELLS}枚です。分割線を削除するか、行数・列数を調整してから追加してください。`,
     tooLarge: '一部のセルが大きすぎます。分割線を追加して再試行してください。',
     spacing: '分割間隔は元画像で12px以上必要です。行数または列数を減らしてください。',
     addSpacing: '分割線の両側に元画像で12px以上必要なため、これ以上追加できません。',
-    grid: (c: number, r: number) => `${c}×${r}=${c * r}。線をドラッグすると不均等に分割できます。`,
+    grid: '線をドラッグすると不均等に分割できます。',
     count: (total: number, selected: number) => ({ before: `全${total}枚 · 選択中 `, selected: `${selected}枚`, after: '' }),
     submit: (count: number) => `${count}枚に分割`, cell: (index: number) => `セル${index}`,
     line: (axis: SplitAxis, index: number) => `${axis === 'x' ? '縦' : '横'}分割線${index}`,
@@ -82,6 +85,7 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
   const [grid, setGrid] = useState<SplitGrid | null>(null), gridRef = useRef<SplitGrid | null>(null);
   const [columns, setColumns] = useState('2'), [rows, setRows] = useState('2');
   const [formError, setFormError] = useState(''), [error, setError] = useState('');
+  const [lineError, setLineError] = useState('');
   const [loadFailed, setLoadFailed] = useState(false), [busy, setBusy] = useState(false);
   const [zoom, setZoom] = useState(.4), [pan, setPan] = useState<ImageEditorPoint>({ x: 0, y: 0 });
   const [space, setSpace] = useState(false), [dragging, setDragging] = useState(false);
@@ -108,14 +112,14 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
       if (next !== current) {
         history.current.push(current); future.current = []; updateGrid(next, true);
       }
-      setError('');
+      setError(''); setLineError('');
     } catch (issue) { setFormError(issue instanceof ImageSplitError && issue.reason === 'insufficient-spacing' ? t.spacing : t.limit); }
   }
   function restore(redo: boolean) {
     if (!gridRef.current || busy || drag.current) return;
     const from = redo ? future : history, to = redo ? history : future, next = from.current.pop();
     if (!next) return;
-    to.current.push(gridRef.current); updateGrid(next, true); setError('');
+    to.current.push(gridRef.current); updateGrid(next, true); setError(''); setLineError('');
   }
   function cancel() { job.current?.abort(); drag.current = null; setLineDrag(null); onClose(); }
 
@@ -138,7 +142,7 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
     const original = new Image();
     if (/^https?:/i.test(source.url)) original.crossOrigin = 'anonymous';
     initialized.current = false; gridRef.current = null; setLineDrag(null);
-    setImage(null); setGrid(null); setLoadFailed(false); setError(''); setFormError('');
+    setImage(null); setGrid(null); setLoadFailed(false); setError(''); setFormError(''); setLineError('');
     history.current = []; future.current = [];
     original.onload = () => {
       if (!active) return;
@@ -232,9 +236,9 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
     if (!current || busy || drag.current) return;
     try {
       const next = addSplitLine(current, axis);
-      if (next === current) { setError(t.addSpacing); return; }
+      if (next === current) { setLineError(t.addSpacing); return; }
       changeGrid(() => next);
-    } catch (issue) { setError(issue instanceof ImageSplitError && issue.reason === 'insufficient-spacing' ? t.spacing : t.limit); }
+    } catch (issue) { setLineError(issue instanceof ImageSplitError && issue.reason === 'insufficient-spacing' ? t.addSpacing : t.addLimit); }
   }
   function applyCustom() {
     if (!grid || busy || drag.current) return;
@@ -348,11 +352,18 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
           </form>
         </section>
         <section className="image-split-card">
-          <div className="image-split-card-heading image-split-card-heading--spaced"><h3>{t.lines}</h3><p>{t.grid((grid?.columns.length ?? 1) + 1, (grid?.rows.length ?? 1) + 1)}</p></div>
-          <div className="image-split-field"><div className="image-split-button-row">
-            <Button variant="secondary" size="s" disabled={!!grid && grid.columns.length + 1 >= grid.width} onClick={() => addLine('x')}>{t.vertical}</Button>
-            <Button variant="secondary" size="s" disabled={!!grid && grid.rows.length + 1 >= grid.height} onClick={() => addLine('y')}>{t.horizontal}</Button>
-          </div><Button variant="secondary" size="s" disabled={!grid || !grid.columns.length && !grid.rows.length} onClick={() => changeGrid(clearSplitLines)}>{t.clear}</Button></div>
+          <div className="image-split-card-heading image-split-card-heading--spaced">
+            <h3>{t.lines}</h3>
+            <p>{t.grid}</p>
+            {lineError && <p className="image-split-error" id={`${id}-line-error`} role="alert">{lineError}</p>}
+          </div>
+          <div className="image-split-field">
+            <div className="image-split-button-row">
+              <Button variant="secondary" size="s" disabled={!!grid && grid.columns.length + 1 >= grid.width} aria-describedby={lineError ? `${id}-line-error` : undefined} onClick={() => addLine('x')}>{t.vertical}</Button>
+              <Button variant="secondary" size="s" disabled={!!grid && grid.rows.length + 1 >= grid.height} aria-describedby={lineError ? `${id}-line-error` : undefined} onClick={() => addLine('y')}>{t.horizontal}</Button>
+            </div>
+            <Button variant="secondary" size="s" disabled={!grid || !grid.columns.length && !grid.rows.length} onClick={() => changeGrid(clearSplitLines)}>{t.clear}</Button>
+          </div>
         </section>
         <section className="image-split-card">
           <div className="image-split-card-heading image-split-card-heading--spaced"><h3>{t.select}</h3><p aria-live="polite">{selectionCount.before}<span className="image-split-selected-count">{selectionCount.selected}</span>{selectionCount.after}</p></div>
