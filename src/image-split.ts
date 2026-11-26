@@ -12,11 +12,12 @@ export type SplitGrid = {
 };
 export type SplitCell = { index: number; x: number; y: number; width: number; height: number; selected: boolean };
 export type SplitResult = { blob: Blob; width: number; height: number; index: number };
-export type ImageSplitErrorReason = 'invalid-grid' | 'output-too-large' | 'export-failed' | 'no-selection';
+export type ImageSplitErrorReason = 'invalid-grid' | 'insufficient-spacing' | 'output-too-large' | 'export-failed' | 'no-selection';
 
 // Demo allocation limit, not a platform image specification.
 export const MAX_SPLIT_CELLS = 100;
-export const MIN_SPLIT_SCREEN_GAP = 12;
+// Distances between guides and image edges are measured in original-image pixels.
+export const MIN_SPLIT_PIXEL_GAP = 12;
 
 export class ImageSplitError extends Error {
   constructor(readonly reason: ImageSplitErrorReason) {
@@ -32,14 +33,20 @@ function validateCounts(width: number, height: number, columns: number, rows: nu
     || columns > width || rows > height || columns * rows > MAX_SPLIT_CELLS) {
     throw new ImageSplitError('invalid-grid');
   }
+  if (columns > 1 && Math.floor(width / columns) < MIN_SPLIT_PIXEL_GAP
+    || rows > 1 && Math.floor(height / rows) < MIN_SPLIT_PIXEL_GAP) {
+    throw new ImageSplitError('insufficient-spacing');
+  }
 }
 
 function validateBoundaries(boundaries: number[], size: number) {
   let previous = 0;
   for (const value of boundaries) {
     if (!Number.isSafeInteger(value) || value <= previous || value >= size) throw new ImageSplitError('invalid-grid');
+    if (value - previous < MIN_SPLIT_PIXEL_GAP) throw new ImageSplitError('insufficient-spacing');
     previous = value;
   }
+  if (boundaries.length && size - previous < MIN_SPLIT_PIXEL_GAP) throw new ImageSplitError('insufficient-spacing');
 }
 
 function validateGrid(grid: SplitGrid) {
@@ -59,11 +66,12 @@ function equalBoundaries(size: number, count: number) {
 function pixelGap(minGap: number) {
   const gap = Math.ceil(minGap);
   if (!Number.isFinite(minGap) || minGap <= 0 || !Number.isSafeInteger(gap)) throw new ImageSplitError('invalid-grid');
-  return gap;
+  return Math.max(MIN_SPLIT_PIXEL_GAP, gap);
 }
 
 /** Every output owns a complete integer-pixel rectangle, with no overlaps or gaps. */
-export function createSplitGrid(width: number, height: number, columns = Math.min(2, width), rows = Math.min(2, height)): SplitGrid {
+export function createSplitGrid(width: number, height: number,
+  columns = width >= MIN_SPLIT_PIXEL_GAP * 2 ? 2 : 1, rows = height >= MIN_SPLIT_PIXEL_GAP * 2 ? 2 : 1): SplitGrid {
   validateCounts(width, height, columns, rows);
   return {
     width, height,
@@ -87,7 +95,7 @@ export function resizeSplitGrid(grid: SplitGrid, columns: number, rows: number):
   return createSplitGrid(grid.width, grid.height, columns, rows);
 }
 
-export function moveSplitLine(grid: SplitGrid, axis: SplitAxis, index: number, pixel: number, minGap = 1): SplitGrid {
+export function moveSplitLine(grid: SplitGrid, axis: SplitAxis, index: number, pixel: number, minGap = MIN_SPLIT_PIXEL_GAP): SplitGrid {
   validateGrid(grid);
   const gap = pixelGap(minGap);
   const boundaries = axis === 'x' ? grid.columns : grid.rows;
@@ -104,7 +112,7 @@ export function moveSplitLine(grid: SplitGrid, axis: SplitAxis, index: number, p
 }
 
 /** Divide the widest available strip; both new cells inherit their source selection. */
-export function addSplitLine(grid: SplitGrid, axis: SplitAxis, minGap = 1): SplitGrid {
+export function addSplitLine(grid: SplitGrid, axis: SplitAxis, minGap = MIN_SPLIT_PIXEL_GAP): SplitGrid {
   validateGrid(grid);
   const gap = pixelGap(minGap);
   const columns = grid.columns.length + 1, rows = grid.rows.length + 1;
@@ -172,20 +180,6 @@ export function equalSplitPreset(grid: SplitGrid): number | null {
   const columns = equalBoundaries(grid.width, count), rows = equalBoundaries(grid.height, count);
   return grid.columns.every((value, index) => value === columns[index])
     && grid.rows.every((value, index) => value === rows[index]) ? count : null;
-}
-
-/** Minimum viewport scale that keeps every divided strip at least 12 display pixels wide. */
-export function splitMinimumZoom(grid: SplitGrid): number {
-  validateGrid(grid);
-  let minimum = Infinity;
-  for (const [boundaries, size] of [[grid.columns, grid.width], [grid.rows, grid.height]] as const) {
-    if (!boundaries.length) continue;
-    const edges = [0, ...boundaries, size];
-    for (let index = 0; index < edges.length - 1; index++) {
-      minimum = Math.min(minimum, edges[index + 1] - edges[index]);
-    }
-  }
-  return minimum === Infinity ? .01 : MIN_SPLIT_SCREEN_GAP / minimum;
 }
 
 function ensureActive(signal: AbortSignal) {

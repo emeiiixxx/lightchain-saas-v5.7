@@ -1,9 +1,9 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Locale } from '../i18n';
 import { canvasMediaDisplayName } from '../canvas-media-filename';
-import { IMAGE_EDITOR_MIN_ZOOM, IMAGE_EDITOR_MAX_ZOOM, imageEditorViewport, imageEditorZoomAt, type ImageEditorPoint } from '../image-editor-viewport';
-import { addSplitLine, clearSplitLines, createSplitGrid, equalSplitPreset, ImageSplitError, MAX_SPLIT_CELLS, MIN_SPLIT_SCREEN_GAP, moveSplitLine, removeSplitLine,
-  renderSplitImages, resizeSplitGrid, selectSplitCells, splitCells, splitMinimumZoom, toggleSplitCell, type SplitAxis, type SplitGrid, type SplitResult } from '../image-split';
+import { IMAGE_EDITOR_MIN_ZOOM, imageEditorViewport, imageEditorZoomAt, type ImageEditorPoint } from '../image-editor-viewport';
+import { addSplitLine, clearSplitLines, createSplitGrid, equalSplitPreset, ImageSplitError, MAX_SPLIT_CELLS, MIN_SPLIT_PIXEL_GAP, moveSplitLine, removeSplitLine,
+  renderSplitImages, resizeSplitGrid, selectSplitCells, splitCells, toggleSplitCell, type SplitAxis, type SplitGrid, type SplitResult } from '../image-split';
 import { ChoiceChip } from './ChoiceChip';
 import { ImageEditorZoom } from './ImageEditorZoom';
 import { Button, Icon } from './ui';
@@ -18,7 +18,6 @@ type Props = {
 type Pointer = Pick<PointerEvent, 'pointerId' | 'clientX' | 'clientY'>;
 type Drag = { pointer: number; target: HTMLElement; start: ImageEditorPoint; pan: ImageEditorPoint; scale: number; snapshot: SplitGrid;
   mode: 'pan' | SplitAxis; index: number };
-const MAX_CUSTOM_SPLIT_COUNT = 10;
 const copy = {
   'zh-CN': {
     title: '图片切分', close: '关闭图片切分', settings: '切分设置', original: '原图', quantity: '配置切分数量',
@@ -27,10 +26,10 @@ const copy = {
     apply: '应用切分', lines: '分割线', vertical: '添加竖线', horizontal: '添加横线', clear: '清空分割线',
     select: '选择切片', all: '全选', none: '取消全选', output: '每个选中的切片生成一张独立图片',
     loading: '正在读取图片…', loadError: '图片读取失败，请关闭后重试', exporting: '正在切分…', exportError: '图片切分失败，请重试',
-    invalid: '请输入大于 0 的整数，行列数不能超过原图像素', limit: `单次最多切分 ${MAX_SPLIT_CELLS} 格，请调整行列数`,
+    invalid: '请输入大于 0 的整数，行列数不能超过原图像素', limit: `单次最多切分${MAX_SPLIT_CELLS}张，请调整行列数`,
     tooLarge: '部分宫格尺寸过大，请增加分割线后重试',
-    spacing: '宫格显示间距不能小于 12px，请减少行列数',
-    addSpacing: '当前没有足够间距，请放大画面后再添加分割线',
+    spacing: '分割间距不能小于12px（原图像素），请减少行列数',
+    addSpacing: '分割线两侧需各保留至少12px（原图像素），当前区域无法继续添加',
     grid: (c: number, r: number) => `当前${c}×${r}=${c * r}，可拖动分割线，调整为不等分`,
     count: (total: number, selected: number) => ({ before: `共 ${total} 张 · 已选 `, selected: `${selected} 张`, after: '' }),
     submit: (count: number) => `切分 ${count} 张`, cell: (index: number) => `宫格 ${index}`,
@@ -44,10 +43,10 @@ const copy = {
     apply: 'Apply grid', lines: 'Dividing lines', vertical: 'Add vertical', horizontal: 'Add horizontal', clear: 'Clear lines',
     select: 'Select slices', all: 'Select all', none: 'Deselect all', output: 'Each selected slice becomes a separate image',
     loading: 'Loading image…', loadError: 'Unable to load the image. Close and try again.', exporting: 'Splitting…', exportError: 'Unable to split the image. Try again.',
-    invalid: 'Enter positive whole numbers no greater than the image dimensions.', limit: `Use at most ${MAX_SPLIT_CELLS} cells per split.`,
+    invalid: 'Enter positive whole numbers no greater than the image dimensions.', limit: `Split up to ${MAX_SPLIT_CELLS} images at a time. Adjust the rows or columns.`,
     tooLarge: 'Some cells are too large. Add more dividing lines and try again.',
-    spacing: 'Cells must be at least 12px apart on screen. Reduce the number of rows or columns.',
-    addSpacing: 'Not enough space. Zoom in before adding another dividing line.',
+    spacing: 'Divisions must be at least 12 original-image pixels apart. Reduce the rows or columns.',
+    addSpacing: 'A new line needs at least 12 original-image pixels on each side. There is not enough space.',
     grid: (c: number, r: number) => `${c}×${r} = ${c * r}. Drag lines for unequal sizes.`,
     count: (total: number, selected: number) => ({ before: `${total} slices · `, selected: `${selected} slices`, after: ' selected' }),
     submit: (count: number) => `Split ${count} images`, cell: (index: number) => `Cell ${index}`,
@@ -61,10 +60,10 @@ const copy = {
     apply: '分割を適用', lines: '分割線', vertical: '縦線を追加', horizontal: '横線を追加', clear: '分割線をクリア',
     select: '分割画像を選択', all: 'すべて選択', none: 'すべて解除', output: '選択した領域ごとに独立した画像を生成します',
     loading: '画像を読み込み中…', loadError: '画像を読み込めません。閉じてから再試行してください。', exporting: '分割中…', exportError: '画像を分割できませんでした。再試行してください。',
-    invalid: '元画像のピクセル数以下の正の整数を入力してください。', limit: `1回に分割できるのは最大${MAX_SPLIT_CELLS}セルです。`,
+    invalid: '元画像のピクセル数以下の正の整数を入力してください。', limit: `1回に分割できるのは最大${MAX_SPLIT_CELLS}枚です。行数または列数を調整してください。`,
     tooLarge: '一部のセルが大きすぎます。分割線を追加して再試行してください。',
-    spacing: 'セルの表示間隔は12px以上必要です。行数または列数を減らしてください。',
-    addSpacing: '間隔が足りません。画面を拡大してから分割線を追加してください。',
+    spacing: '分割間隔は元画像で12px以上必要です。行数または列数を減らしてください。',
+    addSpacing: '分割線の両側に元画像で12px以上必要なため、これ以上追加できません。',
     grid: (c: number, r: number) => `${c}×${r}=${c * r}。線をドラッグすると不均等に分割できます。`,
     count: (total: number, selected: number) => ({ before: `全${total}枚 · 選択中 `, selected: `${selected}枚`, after: '' }),
     submit: (count: number) => `${count}枚に分割`, cell: (index: number) => `セル${index}`,
@@ -92,8 +91,7 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
   const history = useRef<SplitGrid[]>([]), future = useRef<SplitGrid[]>([]);
   const pointerUp = useRef<(event: PointerEvent) => void>(() => {}), wheel = useRef<(event: WheelEvent) => void>(() => {});
   const { center, fitZoom } = imageEditorViewport(viewport, grid, true);
-  const minimumZoom = Math.max(IMAGE_EDITOR_MIN_ZOOM, grid ? splitMinimumZoom(grid) : IMAGE_EDITOR_MIN_ZOOM);
-  const minimumPixelGap = Math.max(1, Math.ceil(MIN_SPLIT_SCREEN_GAP / zoom - 1e-8));
+  const minimumZoom = IMAGE_EDITOR_MIN_ZOOM;
   const cells = grid ? splitCells(grid) : [], selectedCount = cells.filter(cell => cell.selected).length;
   const selectionCount = t.count(cells.length, selectedCount);
   const preset = grid ? equalSplitPreset(grid) : null;
@@ -107,21 +105,17 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
     if (!current || busy || job.current || drag.current || phase === 'exit') return;
     try {
       const next = operation(current);
-      const requiredZoom = Math.max(IMAGE_EDITOR_MIN_ZOOM, splitMinimumZoom(next));
-      if (requiredZoom > IMAGE_EDITOR_MAX_ZOOM) { setFormError(t.spacing); return; }
       if (next !== current) {
         history.current.push(current); future.current = []; updateGrid(next, true);
-        setZoom(previous => Math.max(previous, requiredZoom));
       }
       setError('');
-    } catch { setFormError(t.limit); }
+    } catch (issue) { setFormError(issue instanceof ImageSplitError && issue.reason === 'insufficient-spacing' ? t.spacing : t.limit); }
   }
   function restore(redo: boolean) {
     if (!gridRef.current || busy || drag.current) return;
     const from = redo ? future : history, to = redo ? history : future, next = from.current.pop();
     if (!next) return;
     to.current.push(gridRef.current); updateGrid(next, true); setError('');
-    setZoom(previous => Math.max(previous, IMAGE_EDITOR_MIN_ZOOM, splitMinimumZoom(next)));
   }
   function cancel() { job.current?.abort(); drag.current = null; setLineDrag(null); onClose(); }
 
@@ -149,11 +143,7 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
     original.onload = () => {
       if (!active) return;
       try {
-        // Tiny originals must not create divisions that cannot meet the gap
-        // even at the shared maximum zoom.
-        const minPixels = Math.ceil(MIN_SPLIT_SCREEN_GAP / IMAGE_EDITOR_MAX_ZOOM);
-        updateGrid(createSplitGrid(original.naturalWidth, original.naturalHeight,
-          original.naturalWidth >= minPixels * 2 ? 2 : 1, original.naturalHeight >= minPixels * 2 ? 2 : 1), true);
+        updateGrid(createSplitGrid(original.naturalWidth, original.naturalHeight), true);
         setImage(original);
       }
       catch { setLoadFailed(true); }
@@ -215,8 +205,7 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
     if (current.mode === 'pan') { setPan({ x: current.pan.x + dx, y: current.pan.y + dy }); return; }
     const boundaries = current.mode === 'x' ? current.snapshot.columns : current.snapshot.rows;
     updateGrid(moveSplitLine(current.snapshot, current.mode, current.index,
-      boundaries[current.index] + (current.mode === 'x' ? dx : dy) / current.scale,
-      Math.max(1, Math.ceil(MIN_SPLIT_SCREEN_GAP / current.scale - 1e-8))));
+      boundaries[current.index] + (current.mode === 'x' ? dx : dy) / current.scale));
     setLineDrag({ axis: current.mode, index: current.index, point: stagePoint(event) });
   }
   function end(event: Pick<Pointer, 'pointerId'>, cancelled = false) {
@@ -236,23 +225,24 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
     if (event.key !== decrease && event.key !== increase) return;
     event.preventDefault(); event.stopPropagation();
     const delta = (event.key === decrease ? -1 : 1) * (event.shiftKey ? 10 : 1);
-    changeGrid(current => moveSplitLine(current, axis, index, (axis === 'x' ? current.columns : current.rows)[index] + delta, minimumPixelGap));
+    changeGrid(current => moveSplitLine(current, axis, index, (axis === 'x' ? current.columns : current.rows)[index] + delta));
   }
   function addLine(axis: SplitAxis) {
     const current = gridRef.current;
     if (!current || busy || drag.current) return;
     try {
-      const next = addSplitLine(current, axis, minimumPixelGap);
+      const next = addSplitLine(current, axis);
       if (next === current) { setError(t.addSpacing); return; }
       changeGrid(() => next);
-    } catch { setError(t.limit); }
+    } catch (issue) { setError(issue instanceof ImageSplitError && issue.reason === 'insufficient-spacing' ? t.spacing : t.limit); }
   }
   function applyCustom() {
     if (!grid || busy || drag.current) return;
-    // Clamp only on submission; updateGrid writes the applied counts back to both inputs.
-    const c = Math.min(MAX_CUSTOM_SPLIT_COUNT, Number(columns)), r = Math.min(MAX_CUSTOM_SPLIT_COUNT, Number(rows));
+    const c = Number(columns), r = Number(rows);
     if (!/^\d+$/.test(columns) || !/^\d+$/.test(rows) || !Number.isSafeInteger(c) || !Number.isSafeInteger(r)
-      || c < 1 || r < 1 || c > grid.width || r > grid.height) { setFormError(t.invalid); return; }
+      || c < 1 || r < 1) { setFormError(t.invalid); return; }
+    if (c * r > MAX_SPLIT_CELLS) { setFormError(t.limit); return; }
+    if (c > grid.width || r > grid.height) { setFormError(t.invalid); return; }
     changeGrid(current => resizeSplitGrid(current, c, r));
   }
   async function apply() {
@@ -341,7 +331,7 @@ export function ImageSplitEditor({ source, locale, phase, onClose, onApply }: Pr
           <div className="image-split-card-heading"><h3>{t.quantity}</h3><p className="image-split-description">{t.description}</p></div>
           <div className="image-split-field"><h4>{t.presets}</h4><div className="image-split-presets" role="group" aria-label={t.presets}>
             {[2, 3, 4, 5, 6, 7].map(count => <ChoiceChip key={count} size="m" selected={preset === count}
-              disabled={!grid || count > grid.width || count > grid.height} onClick={() => changeGrid(current => resizeSplitGrid(current, count, count))}>{count}×{count}</ChoiceChip>)}
+              disabled={!grid || count * MIN_SPLIT_PIXEL_GAP > grid.width || count * MIN_SPLIT_PIXEL_GAP > grid.height} onClick={() => changeGrid(current => resizeSplitGrid(current, count, count))}>{count}×{count}</ChoiceChip>)}
           </div></div>
           <form className="image-split-field" onSubmit={event => { event.preventDefault(); applyCustom(); }}>
             <h4>{t.custom}</h4>
