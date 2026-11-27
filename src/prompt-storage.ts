@@ -31,6 +31,7 @@ type Snapshot = {
   migratedV57Libraries?: true;
 };
 export type PromptStoreResult = { ok: true } | { ok: false; message: string };
+export type PromptBatchAction = { type: 'delete' } | { type: 'move'; category: string; categoryIdentity?: string };
 export type PromptCategoryCreateResult = { ok: true; category: string } | { ok: false; message: string };
 export type PromptCategoryIdentities = Record<string, string>;
 export type PromptLibraryState = { entries: PromptEntry[]; customCategories: string[]; categoryIdentities?: PromptCategoryIdentities };
@@ -543,6 +544,36 @@ export async function persistPromptLibrary(entries: PromptEntry[], baseline: Pro
 
 export async function persistPrompts(entries: PromptEntry[], baseline: PromptEntry[], options: PromptSaveOptions = {}): Promise<PromptEntry[]> {
   return (await persistPromptLibrary(entries, baseline, options)).entries;
+}
+
+export async function applyPromptBatch(ids: readonly string[], action: PromptBatchAction, locale: Locale): Promise<PromptStoreResult & { category?: string }> {
+  const selected = new Set(ids);
+  if (!selected.size) return { ok: true };
+  try {
+    await initialize();
+    const { result: category } = await updatePromptLibrary(current => {
+      let entries = current.entries;
+      let destination: string | undefined;
+      if (action.type === 'delete') {
+        const remaining = entries.filter(entry => !selected.has(entry.id));
+        if (remaining.length !== entries.length) entries = remaining;
+      } else {
+        const identities = action.categoryIdentity ? { [action.category]: action.categoryIdentity } : undefined;
+        destination = resolvePromptCategoryIdentity(action.category, identities, current.categoryIdentities);
+        if (destination === 'all' && action.category !== 'all') {
+          throw new PromptConflictError(promptCategoryCopy[locale].failed);
+        }
+        if (entries.some(entry => selected.has(entry.id) && entry.category !== destination)) {
+          entries = entries.map(entry => selected.has(entry.id) && entry.category !== destination
+            ? { ...entry, category: destination } : entry);
+        }
+      }
+      return { state: { ...current, entries }, result: destination };
+    }, action.type === 'delete' ? 'prompt-batch-delete' : 'prompt-batch-move');
+    return { ok: true, category };
+  } catch (error) {
+    return { ok: false, message: promptStorageError(error) };
+  }
 }
 
 export async function managePromptCategories(changes: PromptCategoryDraftChanges, locale: Locale): Promise<PromptLibraryState> {

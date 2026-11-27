@@ -1,0 +1,3 @@
+.prompt-card-menu > .canvas-context-subtrigger[aria-expanded='true'] { background: var(--state-hover); }
+.prompt-card-menu > .canvas-context-subtrigger > .canvas-context-label { flex: 1; text-align: start; }
+.prompt-card-menu .canvas-context-submenu-content .canvas-context-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

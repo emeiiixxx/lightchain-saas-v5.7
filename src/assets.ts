@@ -1,8 +1,10 @@
 import { inlineIconAssets } from './inline-icons';
 import imageSplitIcon from './assets-image-split.svg?raw';
 import promptCategoryCreateIcon from './assets-prompt-category-add.svg?raw';
+import promptBatchManageIcon from './assets-prompt-batch-manage.svg?raw';
 // Figma node 12:3127 assets; theme icons reuse the existing 5.2 TopBar artwork.
 export const assets = inlineIconAssets({
+  promptBatchManage: `data:image/svg+xml,${encodeURIComponent(promptBatchManageIcon).replace(/'/g, '%27')}`,
   imageSplit: `data:image/svg+xml,${encodeURIComponent(imageSplitIcon).replace(/'/g, '%27')}`,
   promptCategoryCreate: `data:image/svg+xml,${encodeURIComponent(promptCategoryCreateIcon).replace(/'/g, '%27')}`,
   cropEditorTitle: '/assets/crop-editor-v57/crop.svg',

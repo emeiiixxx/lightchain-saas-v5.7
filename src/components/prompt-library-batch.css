@@ -1,0 +1,119 @@
+.prompt-library .prompt-batch-row {
+  display: grid;
+  grid-template-columns: 0px minmax(0, 1fr);
+  flex: none;
+  align-items: center;
+  min-width: 0;
+  transition: grid-template-columns var(--motion-duration) var(--motion-easing);
+}
+
+.prompt-library .prompt-batch-row[data-active='true'] {
+  grid-template-columns: calc(20px + var(--spacing-base)) minmax(0, 1fr);
+}
+
+.prompt-batch-choice {
+  display: flex;
+  justify-self: start;
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: transform var(--motion-duration) var(--motion-easing), opacity var(--motion-duration) var(--motion-easing);
+}
+.prompt-batch-row[data-active='true'] > .prompt-batch-choice {
+  opacity: 1;
+  transform: none;
+}
+
+/* 5.1 Beta Checkbox / Circle / M (20 px). */
+.prompt-batch-check {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.prompt-batch-check > input {
+  appearance: none;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--border-medium);
+  border-radius: 50%;
+  background: var(--control-fill-default);
+  cursor: pointer;
+}
+
+.prompt-batch-check > input:is(:checked, :indeterminate) {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary);
+}
+
+.prompt-batch-check > input:enabled:hover { border-color: var(--border-brand); }
+.prompt-batch-check > input:focus-visible { outline: 2px solid var(--border-brand); outline-offset: 2px; }
+.prompt-batch-check > input:disabled { opacity: .45; cursor: not-allowed; }
+
+.prompt-batch-check > .icon {
+  position: absolute;
+  inset: 0;
+  color: var(--text-on-brand-black);
+  pointer-events: none;
+}
+
+.prompt-batch-check:has(input:indeterminate)::after {
+  content: '';
+  position: absolute;
+  inset: 9px 5px;
+  border-radius: 2px;
+  background: var(--text-on-brand-black);
+  pointer-events: none;
+}
+
+.prompt-library > aside > .prompt-batch-footer {
+  display: grid;
+  grid-template-rows: 0fr;
+  grid-template-columns: minmax(0,1fr);
+  justify-content: stretch;
+  gap: 0;
+  flex: none;
+  margin-block-start: auto;
+  padding: 0;
+  transition: grid-template-rows var(--motion-duration) var(--motion-easing);
+}
+.prompt-library > aside > .prompt-batch-footer[data-active='true'] { grid-template-rows: 1fr; }
+.prompt-batch-footer-clip { min-height: 0; overflow: clip; }
+.prompt-batch-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-base);
+  padding: 12px;
+  border-top: 1px solid var(--border-weak);
+  transform: translateY(100%);
+  transition: transform var(--motion-duration) var(--motion-easing);
+}
+.prompt-batch-footer[data-active='true'] .prompt-batch-toolbar { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-library .prompt-batch-row, .prompt-batch-choice,
+  .prompt-library > aside > .prompt-batch-footer, .prompt-batch-toolbar { transition: none; }
+}
+
+.prompt-batch-select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-base);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.prompt-batch-select-all:has(input:disabled) { color: var(--text-disabled); cursor: not-allowed; }
+.prompt-batch-actions { display: flex; align-items: center; gap: var(--spacing-xs); margin-inline-start: auto; }
+.prompt-library > aside > .prompt-batch-footer .lc-button--s { height: 32px; }
+.prompt-batch-actions > .prompt-batch-send { flex: none; }
+.prompt-batch-confirm p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 20px; }
+.prompt-batch-confirm-actions { display: flex; justify-content: flex-end; gap: var(--spacing-base); margin-top: var(--spacing-3xl); }

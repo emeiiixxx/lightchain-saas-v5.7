@@ -20,11 +20,11 @@ button:disabled { opacity: .4; cursor: default; }
 .app-shell { height: 100dvh; display: flex; flex-direction: column; }
 .icon { flex: none; display: inline-block; background: currentColor; mask: var(--icon-url) center / contain no-repeat; }
 .lc-button { height: 32px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; flex: none; gap: 4px; border: 1px solid transparent; border-radius: var(--radius-base); background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 500; line-height: 20px; white-space: nowrap; transition-property: background-color, color, border-color, outline-color, box-shadow, opacity; }
-.lc-button:hover { background: var(--state-hover); }
-.lc-button:active { background: var(--state-selected); }
+.lc-button:where(:not(:disabled)):hover { background: var(--state-hover); }
+.lc-button:where(:not(:disabled)):active { background: var(--state-selected); }
 .lc-button--icon { width: 32px; padding: 0; }
 .lc-button--primary { color: var(--text-on-brand-black); background: var(--brand-primary); }
-.lc-button--primary:hover { background: var(--brand-primary-hover); }
+.lc-button--primary:where(:not(:disabled)):hover { background: var(--brand-primary-hover); }
 .lc-button--outline { border-color: var(--border-weak); }
 .divider { display: block; width: 100%; height: 1px; background: var(--border-weak); flex: none; }
 .divider--vertical { width: 1px; height: 24px; }

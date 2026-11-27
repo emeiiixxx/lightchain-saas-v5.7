@@ -15,10 +15,12 @@ type Props = {
   disabled?: boolean;
   className?: string;
   popupClassName?: string;
+  triggerVariant?: 'secondary-button';
   menuTitle?: string;
   menuWidth?: number;
+  placement?: 'top';
   showSelectedCheck?: boolean;
-  footerAction?: { label: string; icon?: IconName; disabled?: boolean; onClick: () => void };
+  footerActions?: readonly { label: string; icon?: IconName; disabled?: boolean; onClick: () => void }[];
   onOpenChange?: (open: boolean) => void;
 };
 
@@ -31,7 +33,7 @@ const ratioIcons: Record<string, IconName> = {
 
 // 5.1 Beta Select 66:194 + DropdownMenuContent 891:4592 + Option 380:2728.
 // The trigger belongs to its node. The menu belongs to the viewport's top layer.
-export function SettingSelect({ label, value, placeholder, icon, chevron, options, onChange, portalContainer, disabled = false, className = '', popupClassName = '', menuTitle, menuWidth, showSelectedCheck = true, footerAction, onOpenChange }: Props) {
+export function SettingSelect({ label, value, placeholder, icon, chevron, options, onChange, portalContainer, disabled = false, className = '', popupClassName = '', triggerVariant, menuTitle, menuWidth, placement, showSelectedCheck = true, footerActions = [], onOpenChange }: Props) {
   const isResolutionMenu = icon === 'fusionHd';
   const menuKind = isResolutionMenu ? 'resolution' : icon === 'fusionRatio' ? 'ratio' : undefined;
   const optionIcons = menuKind === 'ratio' ? ratioIcons : isResolutionMenu ? resolutionIcons : undefined;
@@ -51,6 +53,7 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
   const menu = useRef<HTMLDivElement>(null);
   const keyboardOpen = useRef(false);
   const id = useId();
+  const actionCount = footerActions.length;
 
   useLayoutEffect(() => { if (disabled) setOpen(false); }, [disabled, setOpen]);
   useEffect(() => () => {
@@ -92,11 +95,12 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
       if (rect.bottom <= 0 || rect.top >= innerHeight || rect.right <= 0 || rect.left >= innerWidth) { setOpen(false); return; }
       const below = innerHeight - rect.bottom - 12, above = rect.top - 12;
       const menuSpacing = menuKind ? 4 : 8;
-      const extraItems = (menuTitle ? 1 : 0) + (footerAction ? 2 : 0);
-      const desiredHeight = options.length * 32 + (menuTitle ? 24 : 0) + (footerAction ? 33 : 0)
-        + Math.max(0, options.length + extraItems - 1) * menuSpacing + menuSpacing * 2 + 2;
+      const rowCount = options.length + actionCount;
+      const extraItems = Number(!!menuTitle) + Number(actionCount > 0);
+      const desiredHeight = rowCount * 32 + (menuTitle ? 24 : 0) + (actionCount ? 1 : 0)
+        + Math.max(0, rowCount + extraItems - 1) * menuSpacing + menuSpacing * 2 + 2;
       // Ratio and resolution menus always open downward; overflow scrolls inside.
-      const side = menuKind || below >= desiredHeight || below >= above ? 'bottom' : 'top';
+      const side = placement ?? (menuKind || below >= desiredHeight || below >= above ? 'bottom' : 'top');
       const available = Math.max(32, side === 'bottom' ? below : above);
       popup.dataset.side = side;
       popup.style.width = `${Math.min(menuWidth ?? Math.max(228, rect.width), innerWidth - 16)}px`;
@@ -111,7 +115,7 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
       keyboardOpen.current = false;
     }
     return () => cancelAnimationFrame(frame);
-  }, [shown.value, open, options.length, menuKind, menuTitle, menuWidth, Boolean(footerAction), setOpen]);
+  }, [shown.value, open, options.length, menuKind, menuTitle, menuWidth, placement, actionCount, setOpen]);
 
   function expand(fromKeyboard = false) {
     if (disabled) return;
@@ -122,11 +126,11 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
   function close(restoreFocus: boolean) { setOpen(false); if (restoreFocus) trigger.current?.focus(); }
 
   return <div className={`fusion-setting ${className}`}>
-    <button ref={trigger} type="button" className="lc-setting-select" data-node-id="66:71" disabled={disabled} aria-label={label} aria-haspopup="menu" aria-controls={id} aria-expanded={open}
-      onClick={() => open ? close(false) : expand()}
+    <button ref={trigger} type="button" className={triggerVariant === 'secondary-button' ? 'lc-button lc-button--secondary lc-button--s' : 'lc-setting-select'} data-node-id="66:71" disabled={disabled} aria-label={label} aria-haspopup="menu" aria-controls={id} aria-expanded={open}
+      onClick={event => open ? close(false) : expand(event.detail === 0)}
       onKeyDown={event => {
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); expand(true); }
-        if (event.key === 'Escape' && open) { event.stopPropagation(); close(false); }
+        if (event.key === 'Escape' && open) { event.preventDefault(); event.stopPropagation(); close(false); }
       }}>
       {triggerIcon && <Icon name={triggerIcon} size={16} />}<span className="lc-setting-select-value">{options.find(option => option.value === value)?.label ?? placeholder}</span>{chevron ?? <Icon name="imgChevron" size={16} className="lc-setting-select-chevron" />}
     </button>
@@ -142,8 +146,9 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
       {menuTitle && <div className="lc-select-menu-title">{menuTitle}</div>}
       {options.map(option => <button type="button" key={option.value} className="lc-select-option" data-node-id={value === option.value ? '380:2704' : '380:2696'} role="menuitemradio" aria-checked={value === option.value} tabIndex={value === option.value ? 0 : -1}
         onClick={() => { onChange(option.value); close(true); }}>{optionIcons?.[option.value] && <Icon name={optionIcons[option.value]} size={16} className="lc-select-option-icon" />}<span className="lc-select-option-label">{option.label}</span>{showSelectedCheck && value === option.value && <Icon name="check" size={16} />}</button>)}
-      {footerAction && <><div role="separator" className="lc-select-menu-divider" /><button type="button" role="menuitem" tabIndex={-1} disabled={footerAction.disabled} className="lc-select-option lc-select-menu-action"
-        onClick={() => { if (footerAction.disabled) return; close(true); footerAction.onClick(); }}>{footerAction.icon && <Icon name={footerAction.icon} size={20} className="lc-select-option-icon" />}<span className="lc-select-option-label">{footerAction.label}</span></button></>}
+      {actionCount > 0 && <div role="separator" className="lc-select-menu-divider" />}
+      {footerActions.map(action => <button key={action.label} type="button" role="menuitem" tabIndex={-1} disabled={action.disabled} className="lc-select-option lc-select-menu-action"
+        onClick={() => { close(true); action.onClick(); }}>{action.icon && <Icon name={action.icon} size={20} className="lc-select-option-icon" />}<span className="lc-select-option-label">{action.label}</span></button>)}
     </div>, portalContainer ?? document.body)}
   </div>;
 }
