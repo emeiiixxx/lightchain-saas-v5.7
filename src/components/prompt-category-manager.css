@@ -1,4 +1,4 @@
-/* Figma 162:15543 / 190:1127 / 194:17672. Confirm updates the parent draft only. */
+/* Figma 162:15543 / 190:1127 / 194:17672. Confirm independently commits category changes. */
 .lc-dialog.prompt-category-manager { position: fixed; inset: 0; margin: auto; width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: var(--spacing-3xl); border: 0; border-radius: var(--radius-xl); background: var(--surface-floating); color: var(--text-secondary); box-shadow: inset 0 0 0 1px var(--border-weak), var(--shadow-m); overflow: auto; }
 .lc-dialog.prompt-category-manager[open] { display: flex; flex-direction: column; gap: var(--spacing-3xl); }
 .prompt-category-manager-heading { display: flex; flex-direction: column; flex: none; gap: 0; }
@@ -7,7 +7,6 @@
 .prompt-category-manager-title .lc-button { width: var(--height-xl); min-width: var(--height-xl); height: var(--height-xl); padding: 0; border-radius: var(--radius-m); }
 .prompt-category-manager-heading p { margin: 0; color: var(--text-tertiary); font-size: 14px; font-weight: 400; line-height: 20px; }
 .prompt-category-manager .prompt-category-manager-form { gap: var(--spacing-2xl); }
-.prompt-category-manager-form .prompt-category-add { align-self: flex-start; }
 .prompt-category-manager-categories { display: flex; flex: none; flex-direction: column; gap: var(--spacing-base); min-width: 0; }
 .prompt-category-manager-warning { display: flex; flex: none; align-items: flex-start; gap: var(--spacing-xs); min-width: 0; color: var(--status-warning); font-size: 12px; font-weight: 400; line-height: 16px; }
 .prompt-category-manager-warning > .icon { flex: none; }
@@ -15,12 +14,9 @@
 .prompt-category-manager-list { display: flex; flex: none; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; gap: var(--spacing-base); }
 .prompt-category-manager-list .lc-tag-chip { min-width: 0; max-width: 100%; }
 .prompt-category-manager-list .lc-tag-chip-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-/* Reordering uses the hook's transform animation; hide the source immediately. */
-.prompt-category-manager-item { position: relative; display: flex; min-width: 0; max-width: 100%; border-radius: var(--radius-base); transition: none; }
-.prompt-category-manager-item[data-sortable='true'] .lc-tag-chip { cursor: grab; user-select: none; }
-.prompt-category-manager-item[data-dragging='true'] { opacity: 0; cursor: grabbing; }
-.prompt-category-manager-item:focus-visible { outline: 2px solid var(--border-brand); outline-offset: 2px; }
-.prompt-category-manager-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.prompt-category-manager-name { cursor: text; outline: none; }
+.prompt-category-manager-name:focus-visible { border-radius: var(--radius-base); box-shadow: 0 0 0 1px var(--border-brand); }
+.prompt-category-manager .prompt-category-manager-name-input { width: 224px; max-width: 100%; height: var(--height-2xl); padding-inline: var(--spacing-base); }
 .prompt-category-manager .lc-button.prompt-category-manager-remove { width: var(--height-l); min-width: var(--height-l); height: var(--height-l); padding: 0; border-radius: var(--radius-m); }
 .prompt-category-manager-error { margin: 0; color: var(--status-danger); font-size: 12px; line-height: 16px; }
 .prompt-category-manager-actions { display: flex; flex: none; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--spacing-base); }

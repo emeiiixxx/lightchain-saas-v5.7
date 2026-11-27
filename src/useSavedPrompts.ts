@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { notify } from './components/Toast';
 import type { PromptEntry } from './prompt-types';
 import type { Locale } from './i18n';
-import { createPromptCategory, deletePromptCategories, loadPromptLibrary, persistPromptLibrary, promptStorageError, PROMPT_LIBRARY_CHANNEL, type PromptCategoryCreateResult, type PromptLibraryState, type PromptSaveOptions, type PromptStoreResult } from './prompt-storage';
+import type { PromptCategoryDraftChanges } from './usePromptCategoryDrafts';
+import { createPromptCategory, deletePromptCategories, loadPromptLibrary, managePromptCategories, persistPromptLibrary, promptStorageError, resolvePromptCategoryIdentity, PROMPT_LIBRARY_CHANNEL, type PromptCategoryCreateResult, type PromptCategoryIdentities, type PromptLibraryState, type PromptSaveOptions, type PromptStoreResult } from './prompt-storage';
 
 type Notify = (message: string, tone?: 'error') => void;
 
 export function useSavedPrompts(onNotify: Notify = notify) {
   const [library, setLibrary] = useState<PromptLibraryState>({ entries: [], customCategories: [] });
-  const { entries, customCategories } = library;
+  const { entries, customCategories, categoryIdentities } = library;
   const writing = useRef(false), loaded = useRef(false), mounted = useRef(false), pendingRefresh = useRef(false);
   const channel = useRef<BroadcastChannel | null>(null);
   const revision = useRef(0), report = useRef(onNotify);
@@ -57,7 +58,7 @@ export function useSavedPrompts(onNotify: Notify = notify) {
     writing.current = true;
     ++revision.current;
     try {
-      const saved = await persistPromptLibrary(next, baseline, options);
+      const saved = await persistPromptLibrary(next, baseline, { ...options, categoryIdentities });
       if (mounted.current) setLibrary(saved);
       return { ok: true };
     } catch (error) { return { ok: false, message: promptStorageError(error) }; }
@@ -96,6 +97,30 @@ export function useSavedPrompts(onNotify: Notify = notify) {
       if (pendingRefresh.current) { pendingRefresh.current = false; refreshRef.current(); }
     }
   };
+  const manageCategories = async (changes: PromptCategoryDraftChanges, locale: Locale): Promise<PromptStoreResult> => {
+    if (writing.current) return { ok: false, message: '正在保存，请稍候' };
+    writing.current = true;
+    ++revision.current;
+    try {
+      const saved = await managePromptCategories(changes, locale);
+      if (mounted.current) setLibrary(saved);
+      loaded.current = true;
+      return { ok: true };
+    } catch (error) { return { ok: false, message: promptStorageError(error) }; }
+    finally {
+      writing.current = false;
+      if (pendingRefresh.current) { pendingRefresh.current = false; refreshRef.current(); }
+    }
+  };
   const deleteCategory = (category: string): Promise<PromptStoreResult> => deleteCategories([category]);
-  return { entries, store, customCategories, createCategory, deleteCategory, deleteCategories };
+  return { entries, store, customCategories, categoryIdentities, createCategory, deleteCategory, deleteCategories, manageCategories };
+}
+
+// Resolve selection from the previous registry snapshot before the form's
+// invalid-category fallback runs. Existing drafts follow renames, not namesakes.
+export function usePromptCategoryResolver(identities: PromptCategoryIdentities | undefined) {
+  const previous = useRef(identities);
+  const snapshot = previous.current;
+  useLayoutEffect(() => { previous.current = identities; }, [identities]);
+  return (category: string | undefined) => resolvePromptCategoryIdentity(category, snapshot, identities);
 }

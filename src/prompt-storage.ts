@@ -1,6 +1,7 @@
 import { imageDisplayPreview } from './bundled-assets';
 import type { PromptEntry } from './prompt-types';
 import type { Locale } from './i18n';
+import type { PromptCategoryDraftChanges } from './usePromptCategoryDrafts';
 import { MAX_CUSTOM_PROMPT_CATEGORIES, getCustomPromptCategoryCount, normalizePromptCategory, orderCustomPromptCategories, promptCategoryCopy, promptCategoryNameError, resolveCustomPromptCategory } from './prompt-categories';
 import { ROLE_MODEL_PRESETS_VERSION, roleModelPresets } from './prompt-role-presets';
 import { characterOutfitPreset } from './prompt-character-presets';
@@ -31,9 +32,12 @@ type Snapshot = {
 };
 export type PromptStoreResult = { ok: true } | { ok: false; message: string };
 export type PromptCategoryCreateResult = { ok: true; category: string } | { ok: false; message: string };
-export type PromptLibraryState = { entries: PromptEntry[]; customCategories: string[] };
-export type PromptSaveOptions = { categoriesToCreate?: string[]; categoriesToDelete?: string[]; categoryOrder?: string[]; locale?: Locale };
-type CustomCategoryRegistry = { version: 1; categories: string[] };
+export type PromptCategoryIdentities = Record<string, string>;
+export type PromptLibraryState = { entries: PromptEntry[]; customCategories: string[]; categoryIdentities?: PromptCategoryIdentities };
+// Keep the legacy call shape, but category changes only commit through the
+// independent category APIs; a stale prompt form must not restore deleted tags.
+export type PromptSaveOptions = { categoriesToCreate?: string[]; categoriesToDelete?: string[]; categoryOrder?: string[]; locale?: Locale; categoryIdentities?: PromptCategoryIdentities };
+type CustomCategoryRegistry = { version: 1; categories: string[]; identities?: PromptCategoryIdentities };
 const editableFields = ['name', 'content', 'pinned', 'coverUrl', 'category'] as const;
 
 function validate(entries: unknown): PromptEntry[] {
@@ -368,6 +372,31 @@ function readCustomCategories(registry: unknown, entries: PromptEntry[]): string
   return uniqueCustomCategories(saved.categories);
 }
 
+function readCategoryIdentities(registry: unknown, categories: string[]): PromptCategoryIdentities {
+  const saved = (registry as Partial<CustomCategoryRegistry> | null)?.identities;
+  const used = new Set<string>();
+  return Object.fromEntries(categories.map(category => {
+    const existing = saved && typeof saved === 'object' ? saved[category] : undefined;
+    const identity = typeof existing === 'string' && existing && !used.has(existing) ? existing : crypto.randomUUID();
+    used.add(identity);
+    return [category, identity];
+  }));
+}
+
+// Names remain compatible with existing records; identities distinguish a rename
+// from deleting a category and later creating an unrelated category of that name.
+export function resolvePromptCategoryIdentity(category: string | undefined, previous: PromptCategoryIdentities | undefined, current: PromptCategoryIdentities | undefined): string {
+  const normalized = normalizePromptCategory(category);
+  if (normalized === 'all') return 'all';
+  const key = categoryKey(customCategoryId(normalized));
+  const previousName = Object.keys(previous ?? {}).find(name => categoryKey(name) === key);
+  if (previousName) {
+    const identity = previous![previousName];
+    return Object.keys(current ?? {}).find(name => current![name] === identity) ?? 'all';
+  }
+  return Object.keys(current ?? {}).find(name => categoryKey(name) === key) ?? 'all';
+}
+
 function applyRegisteredCategories(entries: PromptEntry[], customCategories: string[]): PromptEntry[] {
   const registered = new Map(customCategories.map(category => [categoryKey(category), category]));
   let changed = false;
@@ -404,14 +433,17 @@ async function updatePromptLibrary<T>(
           if (!snapshot?.migratedV57Libraries) throw new Error('Prompt library is not initialized');
           const original = unpack(snapshot);
           const customCategories = readCustomCategories(registryRequest.result, original);
-          const current = { entries: applyRegisteredCategories(original, customCategories), customCategories };
+          const categoryIdentities = readCategoryIdentities(registryRequest.result, customCategories);
+          const current = { entries: applyRegisteredCategories(original, customCategories), customCategories, categoryIdentities };
           const updated = update(current);
-          const state = { ...updated.state, entries: applyRegisteredCategories(updated.state.entries, updated.state.customCategories) };
+          const identities = readCategoryIdentities({ identities: updated.state.categoryIdentities ?? categoryIdentities }, updated.state.customCategories);
+          const state = { ...updated.state, categoryIdentities: identities, entries: applyRegisteredCategories(updated.state.entries, updated.state.customCategories) };
           value = { state, result: updated.result };
           if (state.entries !== original) { store.put(pack(state.entries), SNAPSHOT); changed = true; }
           const previous = (registryRequest.result as CustomCategoryRegistry | undefined)?.categories;
-          if (!previous || previous.length !== state.customCategories.length || previous.some((category, index) => category !== state.customCategories[index])) {
-            store.put({ version: 1, categories: state.customCategories } satisfies CustomCategoryRegistry, CUSTOM_CATEGORIES);
+          const previousIdentities = (registryRequest.result as CustomCategoryRegistry | undefined)?.identities;
+          if (!previous || previous.length !== state.customCategories.length || previous.some((category, index) => category !== state.customCategories[index]) || state.customCategories.some(category => previousIdentities?.[category] !== identities[category])) {
+            store.put({ version: 1, categories: state.customCategories, identities } satisfies CustomCategoryRegistry, CUSTOM_CATEGORIES);
             changed = true;
           }
         } catch (error) { failure = error; tx.abort(); }
@@ -469,7 +501,7 @@ function mergeChanges(latest: PromptEntry[], baseline: PromptEntry[], next: Prom
 }
 
 function registerPendingCategories(current: string[], pending: string[], locale: Locale, restoring: ReadonlySet<string>) {
-  const customCategories = [...current], aliases = new Map<string, string>();
+  const customCategories = [...current];
   for (const pendingCategory of pending) {
     const id = customCategoryId(pendingCategory);
     if (!id) throw new PromptConflictError(promptCategoryCopy[locale].failed);
@@ -478,23 +510,17 @@ function registerPendingCategories(current: string[], pending: string[], locale:
     // Removing and restoring a label in one draft undoes its deletion; it
     // does not create a second label with the same name.
     if (restoring.has(categoryKey(id)) && current.includes(category)) {
-      aliases.set(categoryKey(id), category);
       continue;
     }
     const error = promptCategoryNameError(name, customCategories, locale);
     if (error) throw new PromptConflictError(error);
-    aliases.set(categoryKey(id), category);
 
     if (getCustomPromptCategoryCount(customCategories) >= MAX_CUSTOM_PROMPT_CATEGORIES) {
       throw new PromptConflictError(promptCategoryCopy[locale].limitReached);
     }
     customCategories.push(category);
   }
-  const canonicalize = (entries: PromptEntry[]) => entries.map(entry => {
-    const category = entry.category ? aliases.get(categoryKey(customCategoryId(entry.category))) : undefined;
-    return category && category !== entry.category ? { ...entry, category } : entry;
-  });
-  return { customCategories, canonicalize };
+  return { customCategories };
 }
 
 export async function persistPromptLibrary(entries: PromptEntry[], baseline: PromptEntry[], options: PromptSaveOptions = {}): Promise<PromptLibraryState> {
@@ -502,26 +528,69 @@ export async function persistPromptLibrary(entries: PromptEntry[], baseline: Pro
   void initializeRoleModelCovers();
   const next = validate(entries), before = validate(baseline);
   return (await updatePromptLibrary(current => {
-    const categoriesToCreate = options.categoriesToCreate ?? [];
-    const createdKeys = new Set(categoriesToCreate.map(customCategoryId).filter(Boolean).map(categoryKey));
-    const deletedKeys = new Set((options.categoriesToDelete ?? []).map(customCategoryId).filter(Boolean).map(categoryKey));
-    // Deleting and re-adding the same normalized name preserves the registered
-    // spelling and all existing references. Other deletions free capacity first.
-    const remaining = current.customCategories.filter(category => !deletedKeys.has(categoryKey(category)) || createdKeys.has(categoryKey(category)));
-    const restoring = new Set(current.customCategories.map(categoryKey).filter(key => deletedKeys.has(key) && createdKeys.has(key)));
-    const pending = registerPendingCategories(remaining, categoriesToCreate, options.locale ?? 'zh-CN', restoring);
+    const remap = (records: PromptEntry[]) => options.categoryIdentities ? records.map(entry => {
+      const category = resolvePromptCategoryIdentity(entry.category, options.categoryIdentities, current.categoryIdentities);
+      return entry.category === category ? entry : { ...entry, category };
+    }) : records;
     return { state: {
-      customCategories: orderCustomPromptCategories(pending.customCategories, options.categoryOrder),
-      // The transaction's final registry normalization moves deleted references
-      // to all, while preserving explicit prompt edits and every other field.
-      // Canonicalizing both sides preserves the caller's actual field changes.
-      entries: mergeChanges(current.entries, pending.canonicalize(before), pending.canonicalize(next)),
-    }, result: undefined };
+    ...current,
+    // Merge only explicit prompt edits into the latest saved records. The
+    // transaction normalizes category references against the current registry.
+    entries: mergeChanges(current.entries, remap(before), remap(next)),
+  }, result: undefined };
   }, 'prompt-save')).state;
 }
 
 export async function persistPrompts(entries: PromptEntry[], baseline: PromptEntry[], options: PromptSaveOptions = {}): Promise<PromptEntry[]> {
   return (await persistPromptLibrary(entries, baseline, options)).entries;
+}
+
+export async function managePromptCategories(changes: PromptCategoryDraftChanges, locale: Locale): Promise<PromptLibraryState> {
+  await initialize();
+  return (await updatePromptLibrary(current => {
+    const createdKeys = new Set(changes.created.map(customCategoryId).filter(Boolean).map(categoryKey));
+    const deletedKeys = new Set(changes.deleted.map(customCategoryId).filter(Boolean).map(categoryKey));
+    // Only a remove/re-add within this confirmation undoes deletion. A later
+    // creation cannot restore references already committed to All.
+    const remaining = current.customCategories.filter(category => !deletedKeys.has(categoryKey(category)) || createdKeys.has(categoryKey(category)));
+    const conflict = { 'zh-CN': '分类已在其他页面更新，请关闭管理窗口后重试', en: 'Categories changed in another window. Reopen category management and try again.', ja: '別の画面でカテゴリが更新されました。管理画面を開き直してください。' }[locale];
+    const renameMap = new Map<string, string>();
+    for (const change of changes.renamed ?? []) {
+      const from = current.customCategories.find(category => categoryKey(category) === categoryKey(customCategoryId(change.from)));
+      if (!from || deletedKeys.has(categoryKey(from))) throw new PromptConflictError(conflict);
+      if (changes.identities && changes.identities[change.from] !== current.categoryIdentities?.[from]) throw new PromptConflictError(conflict);
+      const to = customCategoryId(change.to);
+      if (!to) throw new PromptConflictError(promptCategoryCopy[locale].failed);
+      renameMap.set(from, to);
+    }
+    for (const deleted of changes.deleted) {
+      const currentName = current.customCategories.find(category => categoryKey(category) === categoryKey(customCategoryId(deleted)));
+      if (currentName && changes.identities && changes.identities[deleted] !== current.categoryIdentities?.[currentName]) throw new PromptConflictError(conflict);
+      if (!currentName && changes.identities?.[deleted] && Object.values(current.categoryIdentities ?? {}).includes(changes.identities[deleted])) throw new PromptConflictError(conflict);
+    }
+    const renamedCategories = remaining.map(category => renameMap.get(category) ?? category);
+    for (const [from, to] of renameMap) {
+      const others = remaining.filter(category => category !== from).map(category => renameMap.get(category) ?? category);
+      const invalid = promptCategoryNameError(to.slice(7), others, locale);
+      if (invalid) throw new PromptConflictError(invalid);
+    }
+    const restoring = new Set(current.customCategories.map(categoryKey).filter(key => deletedKeys.has(key) && createdKeys.has(key)));
+    const pending = registerPendingCategories(renamedCategories, changes.created, locale, restoring);
+    const categoryIdentities = Object.fromEntries(remaining.map(category => [renameMap.get(category) ?? category, current.categoryIdentities![category]]));
+    return { state: {
+      customCategories: orderCustomPromptCategories(pending.customCategories, changes.order?.map(category => renameMap.get(category) ?? category)),
+      categoryIdentities,
+      // Use the latest saved entries, never a caller's unsaved prompt draft.
+      // Registry normalization in this transaction clears deleted categories.
+      entries: current.entries.map(entry => {
+        // A removed name can simultaneously become another category's new name.
+        // Clear its former associations before mapping the surviving identities.
+        if (entry.category?.startsWith('custom:') && !remaining.includes(entry.category)) return { ...entry, category: 'all' };
+        const category = entry.category ? renameMap.get(entry.category) : undefined;
+        return category ? { ...entry, category } : entry;
+      }),
+    }, result: undefined };
+  }, 'category-manage')).state;
 }
 
 export async function createPromptCategory(name: string, locale: Locale): Promise<PromptLibraryState & { category: string }> {
@@ -549,6 +618,7 @@ export async function deletePromptCategories(categories: string[]): Promise<Prom
     const deleted = new Set(current.customCategories.filter(category => requested.has(categoryKey(category))).map(categoryKey));
     if (!deleted.size) return { state: current, result: undefined };
     return { state: {
+      ...current,
       customCategories: current.customCategories.filter(category => !deleted.has(categoryKey(category))),
       entries: current.entries.map(entry => deleted.has(categoryKey(customCategoryId(entry.category ?? '')))
         ? { ...entry, category: 'all' } : entry),

@@ -55,7 +55,7 @@ export function QuickEditComposer({ board, image, phase, onClose, onSubmit, uplo
   const setCount = (count: string) => onDraftChange(previous => ({ ...previous, count }));
   const [menu, setMenu] = useState<'settings' | 'model' | null>(null);
   const shownMenu = usePresence(menu);
-  const { entries: savedPrompts, store: storePrompts, customCategories } = useSavedPrompts(onNotify);
+  const { entries: savedPrompts, store: storePrompts, customCategories, categoryIdentities, createCategory, manageCategories } = useSavedPrompts(onNotify);
   const [savePromptAnchor, setSavePromptAnchor] = useState<HTMLElement | null>(null);
   const shownSavePrompt = usePresence(savePromptAnchor);
   const [promptLibraryOpen, setPromptLibraryOpen] = useState(false);
@@ -246,12 +246,12 @@ export function QuickEditComposer({ board, image, phase, onClose, onSubmit, uplo
     {shownPicker.value && createPortal(<div onDragEnter={event => event.stopPropagation()} onDragOver={event => event.stopPropagation()} onDragLeave={event => event.stopPropagation()} onDrop={event => event.stopPropagation()}>
       <AssetPicker locale={locale} phase={shownPicker.phase} uploads={[...uploads, ...board.images]} onUpload={onUpload} maxCount={pickerCapacity} excludedUrls={[...(!localEdit ? [image.url] : []), ...references.map(ref => ref.url)]} limitMessage={referenceLimitMessage} onConfirm={item => confirmReferences([item])} onConfirmBatch={confirmReferences} onClose={() => setPickerOpen(false)} />
     </div>, document.body)}
-    {shownPromptLibrary.value && createPortal(<PromptLibrary customCategories={customCategories} phase={shownPromptLibrary.phase} entries={savedPrompts} uploads={uploads} onUpload={onUpload} onStore={storePrompts} onNotify={onNotify} onClose={() => setPromptLibraryOpen(false)} onApply={(content, mode) => {
+    {shownPromptLibrary.value && createPortal(<PromptLibrary customCategories={customCategories} categoryIdentities={categoryIdentities} createCategory={createCategory} manageCategories={manageCategories} phase={shownPromptLibrary.phase} entries={savedPrompts} uploads={uploads} onUpload={onUpload} onStore={storePrompts} onNotify={onNotify} onClose={() => setPromptLibraryOpen(false)} onApply={(content, mode) => {
       onDraftChange(previous => ({ ...previous, value: mode === 'replace' ? content : previous.value ? `${previous.value}${previous.value.endsWith('\n') ? '' : '\n'}${content}` : content }));
       focusInputAfterApply.current = true;
       setPromptLibraryOpen(false);
     }} />, document.body)}
-    {shownSavePrompt.value && createPortal(<SavePrompt customCategories={customCategories} anchor={shownSavePrompt.value} phase={shownSavePrompt.phase} entries={savedPrompts} uploads={uploads} onUpload={onUpload} onNotify={onNotify} onClose={() => setSavePromptAnchor(null)} onSave={async (name, category, coverUrl, options) => {
+    {shownSavePrompt.value && createPortal(<SavePrompt customCategories={customCategories} categoryIdentities={categoryIdentities} createCategory={createCategory} manageCategories={manageCategories} anchor={shownSavePrompt.value} phase={shownSavePrompt.phase} entries={savedPrompts} uploads={uploads} onUpload={onUpload} onNotify={onNotify} onClose={() => setSavePromptAnchor(null)} onSave={async (name, category, coverUrl, options) => {
       const result = await storePrompts([{ id: crypto.randomUUID(), name, content: value.trim(), category, coverUrl }, ...savedPrompts], savedPrompts, options);
       if (result.ok) { setSavePromptAnchor(null); onNotify(promptSavedMessage(locale), 'success', { durationMs: PROMPT_SAVED_TOAST_DURATION_MS }); }
       else onNotify(result.message, 'error');

@@ -3,7 +3,7 @@ import type { Locale } from './i18n';
 import type { PromptCategoryCreateResult, PromptStoreResult } from './prompt-storage';
 import { getCustomPromptCategoryCount, MAX_CUSTOM_PROMPT_CATEGORIES, orderCustomPromptCategories, promptCategoryCopy, promptCategoryNameError, resolveCustomPromptCategory } from './prompt-categories';
 
-export type PromptCategoryDraftChanges = { created: string[]; deleted: string[]; order?: string[] };
+export type PromptCategoryDraftChanges = { created: string[]; deleted: string[]; order?: string[]; renamed?: { from: string; to: string }[]; identities?: Record<string, string> };
 type CategoryDraft = PromptCategoryDraftChanges;
 
 function customCategoryId(category: string): string {
