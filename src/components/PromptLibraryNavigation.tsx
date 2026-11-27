@@ -26,13 +26,14 @@ type Props = {
   onChange: (value: string) => void;
   onAddPrompt: () => void;
   onCreateCategory: (name: string) => Promise<PromptCategoryCreateResult>;
+  onOpenManageCategories: () => void;
   onManageCategories: (changes: PromptCategoryDraftChanges) => Promise<PromptStoreResult>;
   query: string;
   onQueryChange: (value: string) => void;
 };
 
 // Figma 413:34073 / 413:34510. Shared by the Flow and design workbench libraries.
-export function PromptLibraryNavigation({ categories, categoryIdentities, value, locale, disabled, addingPromptDisabled, onChange, onAddPrompt, onCreateCategory, onManageCategories, query, onQueryChange }: Props) {
+export function PromptLibraryNavigation({ categories, categoryIdentities, value, locale, disabled, addingPromptDisabled, onChange, onAddPrompt, onCreateCategory, onOpenManageCategories, onManageCategories, query, onQueryChange }: Props) {
   const t = copy[locale];
   const c = promptCategoryCopy[locale];
   const [adding, setAdding] = useState(false);
@@ -50,7 +51,7 @@ export function PromptLibraryNavigation({ categories, categoryIdentities, value,
         <SettingSelect className="prompt-library-category-select" popupClassName="prompt-library-category-menu" label={c.filter}
           portalContainer={header.current} menuTitle={c.chooseCategory} menuWidth={288} value={value} disabled={blocked}
           options={['all', ...categories].map(category => ({ value: category, label: promptCategoryLabel(category, locale) }))}
-          onChange={onChange} footerAction={{ label: c.manage, icon: 'promptCategoryManage', onClick: () => setManaging(true) }}/>
+          onChange={onChange} footerAction={{ label: c.manage, icon: 'promptCategoryManage', onClick: () => { onOpenManageCategories(); setManaging(true); } }}/>
         <Button variant="ghost" size="s" aria-label={c.addCategory} disabled={blocked} onClick={() => setAdding(true)} data-node-id="413:34248"><Icon name="promptCategoryCreate" size={20}/></Button>
       </div>
       <div className="prompt-library-search-row"><div className="prompt-library-search">
