@@ -1,0 +1,10 @@
+/* Lightchain 5.1 Beta IconButton sizes are independent of Button sizes. */
+.lc-button.lc-icon-button { padding: 0; border-radius: var(--radius-base); }
+.lc-icon-button--xs { width: var(--height-l); min-width: var(--height-l); height: var(--height-l); }
+.lc-icon-button--s { width: var(--height-xl); min-width: var(--height-xl); height: var(--height-xl); }
+.lc-icon-button--m { width: var(--height-2xl); min-width: var(--height-2xl); height: var(--height-2xl); }
+.lc-icon-button--l { width: 40px; min-width: 40px; height: 40px; }
+
+.lc-icon-button.lc-button--bare { background: transparent; color: var(--text-tertiary); }
+.lc-icon-button.lc-button--bare:is(:hover, :active):not(:disabled) { background: transparent; color: var(--text-primary); }
+.lc-icon-button.lc-button--bare:disabled { color: var(--text-disabled); }

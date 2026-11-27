@@ -5,6 +5,7 @@ import type { PromptCategoryDraftChanges } from '../usePromptCategoryDrafts';
 import { getCustomPromptCategoryCount, promptCategoryCopy, promptCategoryLabel } from '../prompt-categories';
 import { usePresence } from '../usePresence';
 import { Button, Icon } from './ui';
+import { IconButton } from '../design-workbench/components/ui';
 import { SettingSelect } from './SettingSelect';
 import { PromptCategoryCreateDialog } from './PromptCategoryCreateDialog';
 import { PromptCategoryManager } from './PromptCategoryManager';
@@ -63,7 +64,7 @@ export function PromptLibraryNavigation({ categories, categoryIdentities, value,
       </div>
       <div className="prompt-library-search-row" data-collapsed={batchActive} aria-hidden={batchActive} inert={batchActive}><div className="prompt-library-search">
         <Icon name="search" size={20}/><input ref={searchInput} aria-label={t.search} placeholder={t.search} value={query} disabled={blocked} onChange={event => onQueryChange(event.target.value)}/>
-        {query && <Button className="prompt-library-search-clear" aria-label={t.clear} disabled={blocked} onClick={() => { onQueryChange(''); searchInput.current?.focus({ preventScroll: true }); }}><Icon name="promptSearchClear" size={20}/></Button>}
+        {query && <IconButton variant="bare" size="m" icon={<Icon name="promptSearchClear" size={20}/>} aria-label={t.clear} disabled={blocked} onClick={() => { onQueryChange(''); searchInput.current?.focus({ preventScroll: true }); }}/>}
       </div></div>
     </header>
     {create.value && <PromptCategoryCreateDialog categories={categories} locale={locale} phase={create.phase} onCreateCategory={onCreateCategory}

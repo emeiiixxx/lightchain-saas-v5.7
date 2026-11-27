@@ -1,21 +1,30 @@
 .prompt-library .prompt-batch-row {
+  --prompt-card-shift: calc(20px + var(--spacing-base));
   display: grid;
-  grid-template-columns: 0px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   flex: none;
   align-items: center;
   min-width: 0;
-  transition: grid-template-columns var(--motion-duration) var(--motion-easing);
+  overflow-x: clip;
+  overflow-clip-margin: 4px;
 }
 
-.prompt-library .prompt-batch-row[data-active='true'] {
-  grid-template-columns: calc(20px + var(--spacing-base)) minmax(0, 1fr);
+.prompt-batch-row > .prompt-list-card,
+.prompt-batch-row > .prompt-batch-choice {
+  grid-area: 1 / 1;
+}
+.prompt-batch-row > .prompt-list-card {
+  transition: transform var(--motion-duration) var(--motion-easing);
+}
+.prompt-batch-row[data-active='true'] > .prompt-list-card {
+  transform: translateX(var(--prompt-card-shift));
 }
 
 .prompt-batch-choice {
   display: flex;
   justify-self: start;
   opacity: 0;
-  transform: translateX(-100%);
+  transform: translateX(calc(0px - var(--prompt-card-shift)));
   transition: transform var(--motion-duration) var(--motion-easing), opacity var(--motion-duration) var(--motion-easing);
 }
 .prompt-batch-row[data-active='true'] > .prompt-batch-choice {
@@ -97,7 +106,7 @@
 .prompt-batch-footer[data-active='true'] .prompt-batch-toolbar { transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .prompt-library .prompt-batch-row, .prompt-batch-choice,
+  .prompt-batch-row > .prompt-list-card, .prompt-batch-choice,
   .prompt-library > aside > .prompt-batch-footer, .prompt-batch-toolbar { transition: none; }
 }
 

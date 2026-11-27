@@ -123,13 +123,6 @@ button:disabled { opacity: .4; cursor: default; }
 .sidebar-toggle[aria-expanded='true']:hover { background: var(--surface-default); box-shadow: inset 0 0 0 24px var(--state-selected), var(--shadow-l); }
 .sidebar-toggle:focus-visible { outline: 2px solid var(--border-brand); outline-offset: 3px; }
 
-/* 5.1 Beta IconButton: S=24px, M=32px, L=40px. */
-.lc-button.lc-icon-button { padding: 0; border-radius: var(--radius-base); }
-.lc-icon-button--xs { width: var(--height-l); min-width: var(--height-l); height: var(--height-l); }
-.lc-icon-button--s { width: var(--height-xl); min-width: var(--height-xl); height: var(--height-xl); }
-.lc-icon-button--m { width: var(--height-2xl); min-width: var(--height-2xl); height: var(--height-2xl); }
-.lc-icon-button--l { width: 40px; min-width: 40px; height: 40px; }
-
 /* Beta Tonal: media overlay foreground and surface are shared across themes. */
 .lc-button--tonal { background: var(--surface-media-overlay); color: var(--text-on-brand-white); }
 .lc-button--tonal:hover:not(:disabled) { background: var(--surface-media-overlay-strong); color: var(--text-on-brand-white); }

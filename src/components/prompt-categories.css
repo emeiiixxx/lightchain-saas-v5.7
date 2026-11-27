@@ -24,7 +24,7 @@
   .prompt-library .prompt-library-navigation > .prompt-library-search-row,
   .prompt-library .prompt-library-search-row > .prompt-library-search { transition: none; }
 }
-.prompt-library > aside > header.prompt-library-navigation ~ nav { flex: 1; min-height: 0; padding: 0 12px 12px; gap: 4px; }
+.prompt-library > aside > header.prompt-library-navigation ~ nav { flex: 1; min-height: 0; padding: 0 12px 12px; gap: 4px; scrollbar-gutter: stable; }
 .prompt-library-category-menu.lc-select-popup,.prompt-category-select-menu.lc-select-popup { align-items: stretch; justify-content: flex-start; background: var(--surface-floating); box-shadow: var(--shadow-m); }
 .lc-select-menu-title { flex: none; padding: 4px 8px; color: var(--text-tertiary); font-size: 12px; font-weight: 500; line-height: 16px; }
 .lc-select-menu-divider { flex: none; height: 1px; background: var(--border-weak); }

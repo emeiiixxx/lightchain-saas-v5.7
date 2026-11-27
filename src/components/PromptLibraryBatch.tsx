@@ -8,8 +8,8 @@ import { Button, Dialog, Icon } from './ui';
 import './prompt-library-batch.css';
 
 const copy = {
-  'zh-CN': { all: '全选', send: '发送至', remove: '删除', done: '完成', close: '关闭', cancel: '取消', title: '删除提示词', question: (n: number) => `确定删除选中的 ${n} 条提示词？删除后无法恢复。` },
-  en: { all: 'Select all', send: 'Send to', remove: 'Delete', done: 'Done', close: 'Close', cancel: 'Cancel', title: 'Delete prompts', question: (n: number) => `Delete ${n} selected ${n === 1 ? 'prompt' : 'prompts'}? This cannot be undone.` },
+  'zh-CN': { all: '全选', send: '移动至', remove: '删除', done: '完成', close: '关闭', cancel: '取消', title: '删除提示词', question: (n: number) => `确定删除选中的 ${n} 条提示词？删除后无法恢复。` },
+  en: { all: 'Select all', send: 'Move to', remove: 'Delete', done: 'Done', close: 'Close', cancel: 'Cancel', title: 'Delete prompts', question: (n: number) => `Delete ${n} selected ${n === 1 ? 'prompt' : 'prompts'}? This cannot be undone.` },
   ja: { all: '全選択', send: '移動先', remove: '削除', done: '完了', close: '閉じる', cancel: 'キャンセル', title: 'プロンプトを削除', question: (n: number) => `選択した${n}件のプロンプトを削除しますか？削除後は元に戻せません。` },
 };
 

@@ -1,21 +1,24 @@
 import { iconAssetUrl } from '../../inline-icons';
 import { useLocale } from '../LocaleContext';
-import { isValidElement, type ButtonHTMLAttributes, type CSSProperties, type ReactNode, useLayoutEffect, useRef } from 'react';
+import { isValidElement, type ButtonHTMLAttributes, type CSSProperties, type ReactElement, type ReactNode, useLayoutEffect, useRef } from 'react';
 import '../../components/button-text.css';
+import '../../components/icon-button.css';
 
 // Reuses the 5.3 component API and Beta semantic foregrounds. Artwork is exported from Figma.
 export function Icon({ name, size = 20, className = '' }: { name: string; size?: number; className?: string }) {
   return <span aria-hidden="true" className={`icon ${className}`} style={{ width: size, height: size, '--icon-url': `url("${iconAssetUrl(`/assets/design-workbench/${name}.svg`)}")` } as CSSProperties} />;
 }
-export function Button({ variant = 'ghost', size = 's', icon, children, className = '', title, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'ghost' | 'primary' | 'outline' | 'secondary' | 'tonal' | 'danger' | 'text'; size?: 's' | 'm' | 'l'; icon?: string }) {
+export function Button({ variant = 'ghost', size = 's', icon, children, className = '', title, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'ghost' | 'bare' | 'primary' | 'outline' | 'secondary' | 'tonal' | 'danger' | 'text'; size?: 's' | 'm' | 'l'; icon?: string }) {
   const iconOnly = (!children && !!icon) || (isValidElement(children) && children.type === Icon);
   const tooltip = title || (iconOnly ? props['aria-label'] : undefined);
   return <button type="button" className={`lc-button lc-button--${variant} lc-button--${size} ${!children ? 'lc-button--icon' : ''} ${className}`} {...props} data-tooltip={tooltip}>{icon && <Icon name={icon} size={size === 's' ? 16 : size === 'm' ? 20 : 24} />}{children}</button>;
 }
 export function Divider({ vertical = false }: { vertical?: boolean }) { return <span aria-hidden="true" className={`divider ${vertical ? 'divider--vertical' : ''}`} />; }
 // IconButton uses XS=20, S=24, M=32, L=40, independently of Button sizing.
-export function IconButton({ size = 'm', icon, className = '', ...props }: Omit<Parameters<typeof Button>[0], 'children' | 'size'> & { icon: string; size?: 'xs' | 's' | 'm' | 'l' }) {
-  return <Button {...props} size="s" data-component="IconButton" data-size={size.toUpperCase()} className={`lc-icon-button lc-icon-button--${size} ${className}`}><Icon name={icon} size={size === 'xs' || size === 's' ? 16 : size === 'm' ? 20 : 24} /></Button>;
+export function IconButton({ size = 'm', icon, className = '', ...props }: Omit<Parameters<typeof Button>[0], 'children' | 'size' | 'icon'> & { icon: string | ReactElement; size?: 'xs' | 's' | 'm' | 'l' }) {
+  return <Button {...props} title={props.title || props['aria-label']} size="s" data-component="IconButton" data-size={size.toUpperCase()} className={`lc-icon-button lc-icon-button--${size} ${className}`}>
+    {typeof icon === 'string' ? <Icon name={icon} size={size === 'xs' || size === 's' ? 16 : size === 'm' ? 20 : 24} /> : icon}
+  </Button>;
 }
 export function Dialog({ title, children, headerActions, onClose, phase = 'enter', className = '', closeLabel = '关闭', closeIcon = 'close', closeOnEscape = true, closeOnBackdrop = true }: { title: ReactNode; children: ReactNode; headerActions?: ReactNode; onClose: () => void; phase?: 'enter' | 'exit'; className?: string; closeLabel?: string; closeIcon?: string; closeOnEscape?: boolean; closeOnBackdrop?: boolean }) {
   const { t } = useLocale();
