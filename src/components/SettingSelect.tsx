@@ -17,7 +17,7 @@ type Props = {
   popupClassName?: string;
   menuTitle?: string;
   menuWidth?: number;
-  footerAction?: { label: string; icon?: IconName; onClick: () => void };
+  footerAction?: { label: string; icon?: IconName; disabled?: boolean; onClick: () => void };
   onOpenChange?: (open: boolean) => void;
 };
 
@@ -106,7 +106,7 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
     };
     position();
     if (open && keyboardOpen.current) {
-      (popup.querySelector<HTMLButtonElement>('[aria-checked="true"]') ?? popup.querySelector<HTMLButtonElement>('[role="menuitemradio"], [role="menuitem"]'))?.focus();
+      (popup.querySelector<HTMLButtonElement>('[aria-checked="true"]:not(:disabled)') ?? popup.querySelector<HTMLButtonElement>('[role="menuitemradio"]:not(:disabled), [role="menuitem"]:not(:disabled)'))?.focus();
       keyboardOpen.current = false;
     }
     return () => cancelAnimationFrame(frame);
@@ -131,7 +131,7 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
     </button>
     {shown.value && createPortal(<div ref={menu} popover="manual" className={`lc-select-popup ${popupClassName}`} data-setting-kind={menuKind} data-select-popup data-overlay data-node-id="891:4592" data-phase={shown.phase} inert={shown.phase === 'exit' || disabled} role="menu" id={id} aria-label={label}
       onKeyDown={event => {
-        const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"], [role="menuitem"]'));
+        const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]:not(:disabled), [role="menuitem"]:not(:disabled)'));
         const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
         const next = event.key === 'ArrowDown' ? (index + 1) % buttons.length : event.key === 'ArrowUp' ? (index - 1 + buttons.length) % buttons.length : event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : -1;
         if (next >= 0) { event.preventDefault(); event.stopPropagation(); buttons[next]?.focus(); }
@@ -141,8 +141,8 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
       {menuTitle && <div className="lc-select-menu-title">{menuTitle}</div>}
       {options.map(option => <button type="button" key={option.value} className="lc-select-option" data-node-id={value === option.value ? '380:2704' : '380:2696'} role="menuitemradio" aria-checked={value === option.value} tabIndex={value === option.value ? 0 : -1}
         onClick={() => { onChange(option.value); close(true); }}>{optionIcons?.[option.value] && <Icon name={optionIcons[option.value]} size={16} className="lc-select-option-icon" />}<span className="lc-select-option-label">{option.label}</span>{value === option.value && <Icon name="check" size={16} />}</button>)}
-      {footerAction && <><div role="separator" className="lc-select-menu-divider" /><button type="button" role="menuitem" tabIndex={-1} className="lc-select-option lc-select-menu-action"
-        onClick={() => { close(true); footerAction.onClick(); }}>{footerAction.icon && <Icon name={footerAction.icon} size={20} className="lc-select-option-icon" />}<span className="lc-select-option-label">{footerAction.label}</span></button></>}
+      {footerAction && <><div role="separator" className="lc-select-menu-divider" /><button type="button" role="menuitem" tabIndex={-1} disabled={footerAction.disabled} className="lc-select-option lc-select-menu-action"
+        onClick={() => { if (footerAction.disabled) return; close(true); footerAction.onClick(); }}>{footerAction.icon && <Icon name={footerAction.icon} size={20} className="lc-select-option-icon" />}<span className="lc-select-option-label">{footerAction.label}</span></button></>}
     </div>, portalContainer ?? document.body)}
   </div>;
 }

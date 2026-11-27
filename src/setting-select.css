@@ -26,6 +26,7 @@
 .canvas-context-menu[data-image-menu] .canvas-context-label { min-width: 0; }
 .canvas-context-menu[data-image-menu] .canvas-context-new { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; height: 20px; padding: 0 var(--spacing-base); border-radius: var(--radius-max); background: var(--brand-gradient-chat); color: var(--text-on-brand-black); font-size: 12px; font-weight: 500; line-height: 16px; }
 .canvas-context-divider { height: 1px; flex-shrink: 0; background: var(--border-weak); }
+.lc-select-popup .lc-select-option:disabled,
 .canvas-context-menu .lc-select-option:disabled { background: transparent; color: var(--text-disabled); cursor: not-allowed; }
 .canvas-context-menu .lc-select-option:disabled .canvas-context-shortcut { color: inherit; }
 /* Video workspace cascading menus, Figma 159:27144 / 159:27378 / 159:27502. */

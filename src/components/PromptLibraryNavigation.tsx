@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { Locale } from '../i18n';
 import type { PromptCategoryCreateResult, PromptCategoryIdentities, PromptStoreResult } from '../prompt-storage';
 import type { PromptCategoryDraftChanges } from '../usePromptCategoryDrafts';
-import { promptCategoryCopy, promptCategoryLabel } from '../prompt-categories';
+import { getCustomPromptCategoryCount, promptCategoryCopy, promptCategoryLabel } from '../prompt-categories';
 import { usePresence } from '../usePresence';
 import { Button, Icon } from './ui';
 import { SettingSelect } from './SettingSelect';
@@ -43,6 +43,7 @@ export function PromptLibraryNavigation({ categories, categoryIdentities, value,
   const searchInput = useRef<HTMLInputElement>(null);
   const header = useRef<HTMLElement>(null);
   const blocked = disabled || !!create.value || !!management.value;
+  const manageDisabled = getCustomPromptCategoryCount(categories) === 0;
   return <>
     <header ref={header} className="prompt-library-navigation" data-node-id="413:34073">
       <div className="prompt-library-title-row"><h2>{t.title}</h2></div>
@@ -51,7 +52,7 @@ export function PromptLibraryNavigation({ categories, categoryIdentities, value,
         <SettingSelect className="prompt-library-category-select" popupClassName="prompt-library-category-menu" label={c.filter}
           portalContainer={header.current} menuTitle={c.chooseCategory} menuWidth={288} value={value} disabled={blocked}
           options={['all', ...categories].map(category => ({ value: category, label: promptCategoryLabel(category, locale) }))}
-          onChange={onChange} footerAction={{ label: c.manage, icon: 'promptCategoryManage', onClick: () => { onOpenManageCategories(); setManaging(true); } }}/>
+          onChange={onChange} footerAction={{ label: c.manage, icon: 'promptCategoryManage', disabled: manageDisabled, onClick: () => { if (manageDisabled) return; onOpenManageCategories(); setManaging(true); } }}/>
         <Button variant="ghost" size="s" aria-label={c.addCategory} disabled={blocked} onClick={() => setAdding(true)} data-node-id="413:34248"><Icon name="promptCategoryCreate" size={20}/></Button>
       </div>
       <div className="prompt-library-search-row"><div className="prompt-library-search">
