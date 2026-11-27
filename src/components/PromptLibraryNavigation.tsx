@@ -50,7 +50,7 @@ export function PromptLibraryNavigation({ categories, categoryIdentities, value,
       <div className="prompt-library-add-row"><Button variant="secondary" size="s" icon="promptLibraryAdd" disabled={blocked || addingPromptDisabled} onClick={onAddPrompt}>{t.addPrompt}</Button></div>
       <div className="prompt-library-filter-row" data-node-id="413:34240">
         <SettingSelect className="prompt-library-category-select" popupClassName="prompt-library-category-menu" label={c.filter}
-          portalContainer={header.current} menuTitle={c.chooseCategory} menuWidth={288} value={value} disabled={blocked}
+          portalContainer={header.current} menuTitle={c.chooseCategory} menuWidth={288} showSelectedCheck={false} value={value} disabled={blocked}
           options={['all', ...categories].map(category => ({ value: category, label: promptCategoryLabel(category, locale) }))}
           onChange={onChange} footerAction={{ label: c.manage, icon: 'promptCategoryManage', disabled: manageDisabled, onClick: () => { if (manageDisabled) return; onOpenManageCategories(); setManaging(true); } }}/>
         <Button variant="ghost" size="s" aria-label={c.addCategory} disabled={blocked} onClick={() => setAdding(true)} data-node-id="413:34248"><Icon name="promptCategoryCreate" size={20}/></Button>

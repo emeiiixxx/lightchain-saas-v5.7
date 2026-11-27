@@ -17,6 +17,7 @@ type Props = {
   popupClassName?: string;
   menuTitle?: string;
   menuWidth?: number;
+  showSelectedCheck?: boolean;
   footerAction?: { label: string; icon?: IconName; disabled?: boolean; onClick: () => void };
   onOpenChange?: (open: boolean) => void;
 };
@@ -30,7 +31,7 @@ const ratioIcons: Record<string, IconName> = {
 
 // 5.1 Beta Select 66:194 + DropdownMenuContent 891:4592 + Option 380:2728.
 // The trigger belongs to its node. The menu belongs to the viewport's top layer.
-export function SettingSelect({ label, value, placeholder, icon, chevron, options, onChange, portalContainer, disabled = false, className = '', popupClassName = '', menuTitle, menuWidth, footerAction, onOpenChange }: Props) {
+export function SettingSelect({ label, value, placeholder, icon, chevron, options, onChange, portalContainer, disabled = false, className = '', popupClassName = '', menuTitle, menuWidth, showSelectedCheck = true, footerAction, onOpenChange }: Props) {
   const isResolutionMenu = icon === 'fusionHd';
   const menuKind = isResolutionMenu ? 'resolution' : icon === 'fusionRatio' ? 'ratio' : undefined;
   const optionIcons = menuKind === 'ratio' ? ratioIcons : isResolutionMenu ? resolutionIcons : undefined;
@@ -140,7 +141,7 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
       }}>
       {menuTitle && <div className="lc-select-menu-title">{menuTitle}</div>}
       {options.map(option => <button type="button" key={option.value} className="lc-select-option" data-node-id={value === option.value ? '380:2704' : '380:2696'} role="menuitemradio" aria-checked={value === option.value} tabIndex={value === option.value ? 0 : -1}
-        onClick={() => { onChange(option.value); close(true); }}>{optionIcons?.[option.value] && <Icon name={optionIcons[option.value]} size={16} className="lc-select-option-icon" />}<span className="lc-select-option-label">{option.label}</span>{value === option.value && <Icon name="check" size={16} />}</button>)}
+        onClick={() => { onChange(option.value); close(true); }}>{optionIcons?.[option.value] && <Icon name={optionIcons[option.value]} size={16} className="lc-select-option-icon" />}<span className="lc-select-option-label">{option.label}</span>{showSelectedCheck && value === option.value && <Icon name="check" size={16} />}</button>)}
       {footerAction && <><div role="separator" className="lc-select-menu-divider" /><button type="button" role="menuitem" tabIndex={-1} disabled={footerAction.disabled} className="lc-select-option lc-select-menu-action"
         onClick={() => { if (footerAction.disabled) return; close(true); footerAction.onClick(); }}>{footerAction.icon && <Icon name={footerAction.icon} size={20} className="lc-select-option-icon" />}<span className="lc-select-option-label">{footerAction.label}</span></button></>}
     </div>, portalContainer ?? document.body)}

@@ -14,7 +14,8 @@ html, body, #root { width: 100%; height: 100%; margin: 0; overflow: hidden; }
 button, input { font: inherit; }
 button { cursor: pointer; }
 button, a, input { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--border-brand); outline-offset: 3px; }
+/* Input focus is a fallback: composite fields draw their ring on the wrapper. */
+button:focus-visible, a:focus-visible, :where(input:focus-visible) { outline: 2px solid var(--border-brand); outline-offset: 3px; }
 button:disabled { opacity: .4; cursor: default; }
 .app-shell { height: 100dvh; display: flex; flex-direction: column; }
 .icon { flex: none; display: inline-block; background: currentColor; mask: var(--icon-url) center / contain no-repeat; }
