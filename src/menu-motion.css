@@ -1,0 +1,29 @@
+/* Menu rows own their hover paint. The same rules apply in both workspaces. */
+:is(.lc-select-option, [role='option'], [role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox']) {
+  transition-property: background-color, color, border-color, outline-color, box-shadow;
+}
+
+/* Inherited text and currentColor artwork follow the row's single fade. */
+:is(.lc-select-option, [role='option'], [role^='menuitem']) > :where(span, svg) {
+  transition-property: opacity, transform, translate, rotate, scale;
+}
+:is(.lc-select-option, [role='option'], [role^='menuitem']) > :where(.icon, .lc-select-option-label, svg[aria-hidden='true']) {
+  pointer-events: none;
+}
+
+/* Give the pointer one transition to cross a row gap. Gaps stay non-clickable. */
+@media (hover: hover) {
+  :where([role='menu'], [role='listbox'], .lc-select-popup):hover:not(:has(:is(button, a, [role='option'], [role^='menuitem']):hover))
+    > :is(.lc-select-option, [role='option'], [role^='menuitem']):not(:disabled, [aria-disabled='true']) {
+    transition-delay: var(--motion-duration);
+  }
+}
+
+/* Popovers animate on entry and exit. After entry, release the animation layer. */
+:is([role='menu'], [role='listbox'], .lc-select-popup)[data-phase] {
+  transition-property: color, background-color, border-color, box-shadow;
+}
+:is([role='menu'], [role='listbox'], .lc-select-popup)[data-phase='enter'] {
+  animation-fill-mode: backwards;
+}
+[popover]:not(:modal)::backdrop { pointer-events: none; }

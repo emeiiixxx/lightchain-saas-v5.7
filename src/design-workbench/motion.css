@@ -1,3 +1,5 @@
+@import '../menu-motion.css';
+
 /* Shared with v5.3: all UI state transitions use 200ms ease-out. */
 :root { --motion-duration: 200ms; --motion-easing: ease-out; }
 *, *::before, *::after {
@@ -10,8 +12,6 @@
   transition-property: color, background-color, border-color, outline-color, box-shadow, opacity, transform;
 }
 .icon { pointer-events: none; transition-property: opacity, transform, rotate; }
-/* A non-modal popover's invisible backdrop must not steal hover from its anchor. */
-[popover]::backdrop { pointer-events: none; }
 /* Entry/exit keyframes are the sole owner of overlay opacity. */
 [data-phase] { transition-property: color, background-color, border-color, outline-color, box-shadow; }
 [data-phase='enter'] { animation: ui-enter var(--motion-duration) var(--motion-easing) backwards; }

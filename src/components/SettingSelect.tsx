@@ -88,6 +88,14 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
     const popup = menu.current;
     if (!popup.matches(':popover-open')) popup.showPopover();
     let frame = 0;
+    // A transformed canvas can move without a scroll or resize event. Track it
+    // every frame, but leave the open popover untouched while its bounds are stable.
+    const lastPixels = { width: NaN, maxHeight: NaN, left: NaN, top: NaN };
+    function setPixels(property: keyof typeof lastPixels, value: number) {
+      if (lastPixels[property] === value) return;
+      lastPixels[property] = value;
+      popup.style[property] = `${value}px`;
+    }
     const position = () => {
       const anchor = trigger.current;
       if (!anchor?.isConnected) { setOpen(false); return; }
@@ -102,11 +110,11 @@ export function SettingSelect({ label, value, placeholder, icon, chevron, option
       // Ratio and resolution menus always open downward; overflow scrolls inside.
       const side = placement ?? (menuKind || below >= desiredHeight || below >= above ? 'bottom' : 'top');
       const available = Math.max(32, side === 'bottom' ? below : above);
-      popup.dataset.side = side;
-      popup.style.width = `${Math.min(menuWidth ?? Math.max(228, rect.width), innerWidth - 16)}px`;
-      popup.style.maxHeight = `${available}px`;
-      popup.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - popup.offsetWidth - 8))}px`;
-      popup.style.top = `${side === 'bottom' ? rect.bottom + 4 : rect.top - popup.offsetHeight - 4}px`;
+      if (popup.dataset.side !== side) popup.dataset.side = side;
+      setPixels('width', Math.min(menuWidth ?? Math.max(228, rect.width), innerWidth - 16));
+      setPixels('maxHeight', available);
+      setPixels('left', Math.max(8, Math.min(rect.left, innerWidth - popup.offsetWidth - 8)));
+      setPixels('top', side === 'bottom' ? rect.bottom + 4 : rect.top - popup.offsetHeight - 4);
       if (open) frame = requestAnimationFrame(position);
     };
     position();

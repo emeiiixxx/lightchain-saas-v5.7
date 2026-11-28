@@ -86,7 +86,10 @@ export default function App() {
     const root = document.documentElement;
     root.dataset.focusNavigation = 'pointer';
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Tab') root.dataset.focusNavigation = 'keyboard';
+      const inMenu = event.target instanceof Element && event.target.closest('[role="menu"], [role="listbox"], [aria-haspopup="menu"], [aria-haspopup="listbox"]');
+      if (event.key === 'Tab' || (inMenu && ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter', ' '].includes(event.key))) {
+        root.dataset.focusNavigation = 'keyboard';
+      }
     };
     const onPointerDown = () => { root.dataset.focusNavigation = 'pointer'; };
     document.addEventListener('keydown', onKeyDown, true);

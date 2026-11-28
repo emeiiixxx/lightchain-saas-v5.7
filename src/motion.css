@@ -1,3 +1,5 @@
+@import './menu-motion.css';
+
 /* Project-wide interaction contract: 200ms ease-out. */
 :root { --motion-duration: 200ms; --motion-easing: ease-out; }
 *, *::before, *::after {

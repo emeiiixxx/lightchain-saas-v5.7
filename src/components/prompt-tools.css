@@ -2,7 +2,7 @@
 .prompt-fullscreen::backdrop,.prompt-library::backdrop {background:var(--overlay-scrim);}
 .prompt-fullscreen::backdrop {backdrop-filter:none;}
 .prompt-library::backdrop {backdrop-filter:blur(50px);}
-.prompt-fullscreen[data-phase='enter']::backdrop,.prompt-library[data-phase='enter']::backdrop {animation:ui-enter 200ms ease-out both;}
+.prompt-fullscreen[data-phase='enter']::backdrop,.prompt-library[data-phase='enter']::backdrop {animation:ui-enter 200ms ease-out backwards;}
 .prompt-fullscreen[data-phase='exit']::backdrop,.prompt-library[data-phase='exit']::backdrop {animation:ui-exit 200ms ease-out both;}
 .prompt-screen-tip {position:absolute;top:48px;left:50%;transform:translateX(-50%);padding:8px 16px;border:1px solid var(--border-weak);border-radius:8px;background:var(--overlay-toast);backdrop-filter:blur(10px);color:white;font-size:14px;max-width:calc(100% - 32px);text-align:center;}
 .prompt-expanded {position:absolute;display:flex;flex-direction:column;gap:8px;transition:none;}
